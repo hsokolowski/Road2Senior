@@ -1,0 +1,6 @@
+@Road2Senior_HostAddress = http://localhost:5223
+
+GET {{Road2Senior_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
