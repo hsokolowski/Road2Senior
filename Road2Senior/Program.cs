@@ -11,7 +11,6 @@ builder.Services.AddSwaggerGen();
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
 builder.Services.RegisterInfrastructure(builder.Configuration.GetSection("Infrastructure"));
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -43,6 +42,7 @@ app.MapGet("/weatherforecast", () =>
     .WithName("GetWeatherForecast")
     .WithOpenApi();
 
+app.MapControllers();
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
