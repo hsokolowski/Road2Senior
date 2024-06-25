@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace Infrastructure.Repositories
+namespace Database.Repositories
 {
     public class FootballContext : DbContext
     {
@@ -38,7 +38,7 @@ namespace Infrastructure.Repositories
         public FootballContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<FootballContext>();
-            optionsBuilder.UseSqlite("Data Source=FootballDB.db", b => b.MigrationsAssembly("Infrastructure"));
+            optionsBuilder.UseSqlite("Data Source=FootballDB.db", b => b.MigrationsAssembly("Database"));
 
             return new FootballContext(optionsBuilder.Options);
         }

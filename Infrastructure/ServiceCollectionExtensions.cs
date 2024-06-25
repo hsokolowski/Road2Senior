@@ -1,13 +1,12 @@
-﻿using Infrastructure.EndpointClients;
-using Infrastructure.Football;
-using Infrastructure.Repositories;
+﻿using Database.Repositories;
+using Infrastructure.Cache;
+using Infrastructure.EndpointClients;
+using Infrastructure.Timing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Services.Cache;
-using Services.EndpointClients;
+using Services.DatabaseService;
 using Services.Football;
-using Services.Timing;
 
 namespace Infrastructure;
 
@@ -27,5 +26,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICacheService, CacheService>();
         services.AddScoped<ITimeService, TimeService>();
         services.AddScoped<IFootballService, FootballService>();
+        services.AddScoped<IDatabaseService, DatabaseService>();
     }
 }

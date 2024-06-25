@@ -18,19 +18,6 @@ public class FootballController : ControllerBase
     public async Task<IActionResult> GetLeagues(int id)
     {
         var result = await _footballService.GetLeaguesAsync(id);
-        await _footballService.SaveLeaguesToDatabaseAsync(result);
         return Ok(result);
-    }
-
-    [HttpGet("league/{id}")]
-    public async Task<IActionResult> GetLeague(int id)
-    {
-        var league = await _footballService.GetLeagueAsync(id);
-        if (league == null)
-        {
-            return NotFound("No value in DB :/");
-        }
-
-        return Ok(league);
     }
 }

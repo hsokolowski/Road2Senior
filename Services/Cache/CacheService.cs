@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using Infrastructure.Timing;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Services.Timing;
 
-namespace Services.Cache
+namespace Infrastructure.Cache
 {
     public class CacheService : ICacheService
     {

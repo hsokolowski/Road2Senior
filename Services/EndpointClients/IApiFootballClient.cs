@@ -1,6 +1,6 @@
 ﻿using Domain.Football.Responses;
 
-namespace Services.EndpointClients;
+namespace Infrastructure.EndpointClients;
 
 public interface IApiFootballClient
 {

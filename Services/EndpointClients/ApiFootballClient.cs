@@ -1,6 +1,5 @@
 ﻿using Domain.Football.Responses;
 using Newtonsoft.Json;
-using Services.EndpointClients;
 
 namespace Infrastructure.EndpointClients;
 
