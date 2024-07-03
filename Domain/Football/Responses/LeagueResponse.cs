@@ -5,7 +5,7 @@ namespace Domain.Football.Responses;
 public class LeagueResponse
 {
     [JsonProperty("league")] 
-    public League Get { get; set; }
+    public League League { get; set; }
     
     [JsonProperty("country")] 
     public Country Country { get; set; }

@@ -1,6 +1,6 @@
 ﻿using Domain.Football.Responses;
 using Infrastructure.Cache;
-using Infrastructure.EndpointClients;
+using Services.EndpointClients;
 
 
 namespace Services.Football

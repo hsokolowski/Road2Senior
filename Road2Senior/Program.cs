@@ -1,4 +1,6 @@
+using Database;
 using Infrastructure;
+using Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,9 @@ builder.Services.AddSwaggerGen();
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
 builder.Services.RegisterInfrastructure(builder.Configuration.GetSection("Infrastructure"));
+builder.Services.RegisterServices(builder.Configuration.GetSection("Infrastructure"));
+builder.Services.RegisterDb(builder.Configuration.GetSection("Infrastructure"), builder.Environment);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -49,3 +54,5 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int) (TemperatureC / 0.5556);
 }
+
+public partial class Program { }

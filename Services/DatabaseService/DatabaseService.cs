@@ -31,7 +31,7 @@ public class DatabaseService : IDatabaseService
     {
         var leagueEntities = leagues.Select(l => new LeagueEntity
         {
-            Name = l.Get.Name,
+            Name = l.League.Name,
             Country = l.Country.Name,
             Season = l.Seasons.FirstOrDefault(s => s.IsCurrent)?.Year ?? l.Seasons.First().Year
         }).ToList();

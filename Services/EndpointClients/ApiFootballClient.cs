@@ -1,7 +1,7 @@
 ﻿using Domain.Football.Responses;
 using Newtonsoft.Json;
 
-namespace Infrastructure.EndpointClients;
+namespace Services.EndpointClients;
 
 public class ApiFootballClient : IApiFootballClient
 {
