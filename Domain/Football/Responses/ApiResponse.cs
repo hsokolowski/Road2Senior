@@ -1,18 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Domain.Football.Responses;
 
 public class ApiResponse<T>
 {
-    [JsonProperty("get")] 
+    [JsonPropertyName("get")] 
     public string Get { get; set; }
     
-    [JsonProperty("parameters")] 
+    [JsonPropertyName("parameters")] 
     public Dictionary<string, string> Parameters { get; set; }
     
-    [JsonProperty("results")] 
+    [JsonPropertyName("results")] 
     public int Results { get; set; }
     
-    [JsonProperty("response")] 
+    [JsonPropertyName("response")] 
     public List<T> Response { get; set; }
 }

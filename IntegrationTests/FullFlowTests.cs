@@ -1,9 +1,9 @@
 using System.Text;
+using System.Text.Json;
 using Contracts;
 using Domain.Entities;
 using Domain.Football.Responses;
 using Microsoft.AspNetCore.Hosting;
-using Newtonsoft.Json;
 
 namespace IntegrationTests;
 
@@ -29,17 +29,11 @@ public class FullFlowTests : IClassFixture<CustomWebApplicationFactory<Program>>
         var response = await _client.GetAsync(getUrl);
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
-        var leagues = JsonConvert.DeserializeObject<List<LeagueResponse>>(content);
+        var leagues =  JsonSerializer.Deserialize<IEnumerable<LeagueModel>>(content, new JsonSerializerOptions {AllowTrailingCommas = true, PropertyNameCaseInsensitive = true});
 
         // Krok 2: Zapisz ligę do bazy danych
-        var leagueEntities = leagues.Select(l => new LeagueEntity
-        {
-            Name = l.League.Name,
-            Country = l.Country.Name,
-            Season = l.Seasons.FirstOrDefault(s => s.IsCurrent)?.Year ?? l.Seasons.First().Year
-        }).ToList();
         var saveUrl = "/api/database/league";
-        var saveContent = new StringContent(JsonConvert.SerializeObject(leagueEntities), Encoding.UTF8, "application/json");
+        var saveContent = new StringContent( JsonSerializer.Serialize(leagues), Encoding.UTF8, "application/json");
         var saveResponse = await _client.PostAsync(saveUrl, saveContent);
         
         if (!saveResponse.IsSuccessStatusCode)
@@ -55,6 +49,6 @@ public class FullFlowTests : IClassFixture<CustomWebApplicationFactory<Program>>
         var getFromDbResponse = await _client.GetAsync(getFromDbUrl);
         getFromDbResponse.EnsureSuccessStatusCode();
         var dbContent = await getFromDbResponse.Content.ReadAsStringAsync();
-        Assert.Contains("Premier League", dbContent);
+        Assert.Contains("World Cup", dbContent);
     }
 }

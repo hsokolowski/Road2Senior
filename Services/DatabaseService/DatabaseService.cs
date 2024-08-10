@@ -27,13 +27,13 @@ public class DatabaseService : IDatabaseService
         return await _context.Leagues.FindAsync(id);
     }
     
-    public async Task SaveLeaguesToDatabaseAsync(IEnumerable<LeagueResponse> leagues)
+    public async Task SaveLeaguesToDatabaseAsync(IEnumerable<LeagueModel> leagues)
     {
         var leagueEntities = leagues.Select(l => new LeagueEntity
         {
-            Name = l.League.Name,
-            Country = l.Country.Name,
-            Season = l.Seasons.FirstOrDefault(s => s.IsCurrent)?.Year ?? l.Seasons.First().Year
+            Name = l.Name,
+            Country = l.Country,
+            Season = l.Season
         }).ToList();
 
         await _timeService.MeasureTimeAsync(async () =>

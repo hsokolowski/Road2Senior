@@ -7,5 +7,5 @@ namespace Services.DatabaseService;
 public interface IDatabaseService
 {
     Task<LeagueEntity> GetLeagueAsync(int id);
-    Task SaveLeaguesToDatabaseAsync(IEnumerable<LeagueResponse> leagues);
+    Task SaveLeaguesToDatabaseAsync(IEnumerable<LeagueModel> leagues);
 }

@@ -24,12 +24,18 @@ public class DatabaseController : ControllerBase
         {
             return NotFound("No value in DB :/");
         }
+        var model = new LeagueModel()
+        {
+            Country = league.Country,
+            Name = league.Name,
+            Season = league.Season
+        };
 
-        return Ok(league);
+        return Ok(model);
     }
     
     [HttpPost("league")]
-    public async Task<IActionResult> SaveLeagues([FromBody] List<LeagueResponse> leagues)
+    public async Task<IActionResult> SaveLeagues([FromBody] List<LeagueModel> leagues)
     {
         if (leagues == null || !leagues.Any())
         {

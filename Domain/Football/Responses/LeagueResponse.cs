@@ -1,52 +1,52 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Domain.Football.Responses;
 
 public class LeagueResponse
 {
-    [JsonProperty("league")] 
+    [JsonPropertyName("league")] 
     public League League { get; set; }
     
-    [JsonProperty("country")] 
+    [JsonPropertyName("country")] 
     public Country Country { get; set; }
     
-    [JsonProperty("seasons")] 
+    [JsonPropertyName("seasons")] 
     public List<Season> Seasons { get; set; }
 }
 
 public class League
 {
-    [JsonProperty("id")] 
+    [JsonPropertyName("id")] 
     public int Id { get; set; }
     
-    [JsonProperty("name")] 
+    [JsonPropertyName("name")] 
     public string Name { get; set; }
     
-    [JsonProperty("type")] 
+    [JsonPropertyName("type")] 
     public string Type { get; set; }
 }
 
 
 public class Country
 {
-    [JsonProperty("name")] 
+    [JsonPropertyName("name")] 
     public string Name { get; set; }
     
-    [JsonProperty("code")] 
+    [JsonPropertyName("code")] 
     public string? Code { get; set; }
 }
 
 public class Season
 {
-    [JsonProperty("year")] 
+    [JsonPropertyName("year")] 
     public int Year { get; set; }
     
-    [JsonProperty("start")] 
+    [JsonPropertyName("start")] 
     public string StartDate { get; set; }
     
-    [JsonProperty("end")] 
+    [JsonPropertyName("end")] 
     public string EndDate { get; set; }
     
-    [JsonProperty("current")] 
+    [JsonPropertyName("current")] 
     public bool IsCurrent { get; set; }
 }

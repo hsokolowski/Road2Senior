@@ -1,5 +1,5 @@
-﻿using Domain.Football.Responses;
-using Newtonsoft.Json;
+﻿using System.Text.Json;
+using Domain.Football.Responses;
 
 namespace Services.EndpointClients;
 
@@ -21,7 +21,7 @@ public class ApiFootballClient : IApiFootballClient
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
 
-        return JsonConvert.DeserializeObject<ApiResponse<LeagueResponse>>(content) ??
+        return JsonSerializer.Deserialize<ApiResponse<LeagueResponse>>(content) ??
                throw new InvalidOperationException();
     }
 }
