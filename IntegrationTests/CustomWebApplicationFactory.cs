@@ -3,44 +3,80 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Services.EndpointClients;
+using WireMock.Server;
 
-namespace IntegrationTests;
-
-public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
+namespace IntegrationTests
 {
-    protected override IHost CreateHost(IHostBuilder builder)
+    public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
     {
-        builder.ConfigureServices(services =>
+        public bool UseMockServer { get; set; } = false;
+        public WireMockServer MockServer { get; private set; }
+
+        protected override IHost CreateHost(IHostBuilder builder)
         {
-            // Remove the app's ApplicationDbContext registration.
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<FootballContext>));
-
-            if (descriptor != null)
+            builder.ConfigureServices(services =>
             {
-                services.Remove(descriptor);
-            }
+                if (UseMockServer)
+                {
+                    // Start WireMock server
+                    MockServer = WireMockServer.Start();
 
-            // Add ApplicationDbContext using an in-memory database for testing.
-            services.AddDbContext<FootballContext>(options =>
-            {
-                options.UseInMemoryDatabase("InMemoryDbForTesting");
+                    // Usunięcie oryginalnego klienta HTTP
+                    var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(HttpClient));
+                    if (descriptor != null)
+                    {
+                        services.Remove(descriptor);
+                    }
+
+                    // Dodanie zamockowanego klienta HTTP, który będzie korzystał z WireMockServer
+                    services.AddHttpClient<IApiFootballClient, ApiFootballClient>(client =>
+                    {
+                        client.BaseAddress = new Uri(MockServer.Url+"/api/football/");
+                    });
+                }
+
+                // Remove the app's ApplicationDbContext registration.
+                var descriptorDbContext = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(DbContextOptions<FootballContext>));
+
+                if (descriptorDbContext != null)
+                {
+                    services.Remove(descriptorDbContext);
+                }
+
+                // Add ApplicationDbContext using an in-memory database for testing.
+                services.AddDbContext<FootballContext>(options =>
+                {
+                    options.UseInMemoryDatabase("InMemoryDbForTesting");
+                });
+
+                // Build the service provider.
+                var serviceProvider = services.BuildServiceProvider();
+
+                // Create a scope to obtain a reference to the database contexts
+                using (var scope = serviceProvider.CreateScope())
+                {
+                    var scopedServices = scope.ServiceProvider;
+                    var db = scopedServices.GetRequiredService<FootballContext>();
+
+                    // Ensure the database is created.
+                    db.Database.EnsureCreated();
+                }
             });
 
-            // Build the service provider.
-            var serviceProvider = services.BuildServiceProvider();
+            return base.CreateHost(builder);
+        }
 
-            // Create a scope to obtain a reference to the database contexts
-            using (var scope = serviceProvider.CreateScope())
+        public new void Dispose()
+        {
+            if (UseMockServer && MockServer != null)
             {
-                var scopedServices = scope.ServiceProvider;
-                var db = scopedServices.GetRequiredService<FootballContext>();
-
-                // Ensure the database is created.
-                db.Database.EnsureCreated();
+                MockServer.Stop();
+                MockServer.Dispose();
             }
-        });
 
-        return base.CreateHost(builder);
+            base.Dispose();
+        }
     }
 }

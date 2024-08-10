@@ -2,5 +2,6 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=2b46d6e1_002D2dc3_002D4be1_002D85f5_002D47208ab3e574/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="FullFlow_PobierzZapiszIOdczytajLigę" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;xUnit::D97FACB9-C8C4-4FC5-A115-F144717573C3::net8.0::IntegrationTests.FullFlowTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::D97FACB9-C8C4-4FC5-A115-F144717573C3::net8.0::IntegrationTests.FullFlowWithMockResponseTests&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
