@@ -42,6 +42,11 @@ public class DatabaseController : ControllerBase
             return BadRequest("No leagues provided.");
         }
         
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        
         try
         {
             await _databaseService.SaveLeaguesToDatabaseAsync(leagues);
