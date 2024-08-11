@@ -1,6 +1,8 @@
 ﻿using Database.Repositories;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Services.EndpointClients;
@@ -13,6 +15,17 @@ namespace IntegrationTests
         public bool UseMockServer { get; set; } = false;
         public WireMockServer MockServer { get; private set; }
 
+        private string _apiKey;
+
+        public CustomWebApplicationFactory()
+        {
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json") 
+                .Build();
+
+            _apiKey = config.GetSection("Infrastructure:ApiFootball").GetValue<string>("ApiKey");
+        }
+        
         protected override IHost CreateHost(IHostBuilder builder)
         {
             builder.ConfigureServices(services =>
@@ -63,9 +76,30 @@ namespace IntegrationTests
                     // Ensure the database is created.
                     db.Database.EnsureCreated();
                 }
+                
+                services.AddHttpClient("TestClient", client =>
+                {
+                    client.DefaultRequestHeaders.Add("X-Api-Key", _apiKey);
+                });
             });
 
             return base.CreateHost(builder);
+        }
+        
+        public HttpClient CreateClientWithApiKey()
+        {
+            var client = this.WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Test");
+            }).CreateClient(new WebApplicationFactoryClientOptions
+            {
+                HandleCookies = false,
+                BaseAddress = new Uri("http://localhost")
+            });
+
+            client.DefaultRequestHeaders.Add("X-Api-Key", _apiKey);
+
+            return client;
         }
 
         public new void Dispose()

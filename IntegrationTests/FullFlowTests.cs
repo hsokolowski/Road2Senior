@@ -15,10 +15,7 @@ public class FullFlowTests : IClassFixture<CustomWebApplicationFactory<Program>>
     public FullFlowTests(CustomWebApplicationFactory<Program> factory)
     {
         _factory = factory;
-        _client = _factory.WithWebHostBuilder(builder =>
-        {
-            builder.UseEnvironment("Test");
-        }).CreateClient();
+        _client = _factory.CreateClientWithApiKey();
     }
 
     [Fact]

@@ -1,5 +1,6 @@
 using Database;
 using Infrastructure;
+using Microsoft.OpenApi.Models;
 using Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,37 @@ builder.Services.RegisterInfrastructure(builder.Configuration.GetSection("Infras
 builder.Services.RegisterServices(builder.Configuration.GetSection("Infrastructure"));
 builder.Services.RegisterDb(builder.Configuration.GetSection("Infrastructure"), builder.Environment);
 
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+    {
+        Description = "API Key needed to access the endpoints. X-Api-Key: My_API_Key",
+        In = ParameterLocation.Header,
+        Name = "X-Api-Key",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "ApiKeyScheme"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "ApiKey"
+                },
+                Scheme = "ApiKeyScheme",
+                Name = "ApiKey",
+                In = ParameterLocation.Header,
+
+            },
+            new List<string>()
+        }
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -24,7 +56,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseMiddleware<ApiKeyMiddleware>();
 app.UseHttpsRedirection();
 
 var summaries = new[]

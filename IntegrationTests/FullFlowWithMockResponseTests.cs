@@ -16,10 +16,7 @@ public class FullFlowWithMockResponseTests: IClassFixture<CustomWebApplicationFa
     {
         _factory = factory;
         _factory.UseMockServer = true;
-        _client = _factory.WithWebHostBuilder(builder =>
-        {
-            builder.UseEnvironment("Test");
-        }).CreateClient();
+        _client = _factory.CreateClientWithApiKey();
 
         SetupMockResponse();
     }
