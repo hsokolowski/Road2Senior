@@ -1,4 +1,5 @@
-﻿using Database.Repositories;
+﻿using Azure.Identity;
+using Database.Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -12,44 +13,59 @@ namespace IntegrationTests
 {
     public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
     {
+        // Flaga do używania MockServer
         public bool UseMockServer { get; set; } = false;
+
+        // MockServer dla testów
         public WireMockServer MockServer { get; private set; }
 
+        // Przechowywanie klucza API
         private string _apiKey;
 
+        // Konstruktor fabryki, który wczytuje klucz API z appsettings.json
         public CustomWebApplicationFactory()
         {
+            // Konfiguracja configu z pliku appsettings.json i KV
             var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json") 
+                .AddJsonFile("appsettings.json") // Wczytaj plik appsettings.json
+                .AddAzureKeyVault(new Uri("https://apifootball.vault.azure.net/"), new DefaultAzureCredential()) // Wczytaj KV 
                 .Build();
 
-            _apiKey = config.GetSection("Infrastructure:ApiFootball").GetValue<string>("ApiKey");
+            // Pobierz wartość klucza API z konfiguracji
+            _apiKey = config.GetValue<string>("ApiKey");
+
+            // Sprawdzenie, czy klucz API został poprawnie wczytany
+            if (string.IsNullOrEmpty(_apiKey))
+            {
+                throw new InvalidOperationException("ApiKey nie został poprawnie wczytany z pliku appsettings.json.");
+            }
         }
-        
+
+        // Metoda tworząca hosta testowego
         protected override IHost CreateHost(IHostBuilder builder)
         {
             builder.ConfigureServices(services =>
             {
                 if (UseMockServer)
                 {
-                    // Start WireMock server
+                    // Rozpocznij działanie MockServer, jeśli jest w użyciu
                     MockServer = WireMockServer.Start();
 
-                    // Usunięcie oryginalnego klienta HTTP
+                    // Usuń oryginalnego klienta HTTP
                     var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(HttpClient));
                     if (descriptor != null)
                     {
                         services.Remove(descriptor);
                     }
 
-                    // Dodanie zamockowanego klienta HTTP, który będzie korzystał z WireMockServer
+                    // Dodaj zamockowanego klienta HTTP, który używa MockServer
                     services.AddHttpClient<IApiFootballClient, ApiFootballClient>(client =>
                     {
-                        client.BaseAddress = new Uri(MockServer.Url+"/api/football/");
+                        client.BaseAddress = new Uri(MockServer.Url + "/api/football/");
                     });
                 }
 
-                // Remove the app's ApplicationDbContext registration.
+                // Usuń kontekst bazy danych aplikacji, jeśli istnieje
                 var descriptorDbContext = services.SingleOrDefault(
                     d => d.ServiceType == typeof(DbContextOptions<FootballContext>));
 
@@ -58,25 +74,26 @@ namespace IntegrationTests
                     services.Remove(descriptorDbContext);
                 }
 
-                // Add ApplicationDbContext using an in-memory database for testing.
+                // Dodaj kontekst bazy danych in-memory do testów
                 services.AddDbContext<FootballContext>(options =>
                 {
                     options.UseInMemoryDatabase("InMemoryDbForTesting");
                 });
 
-                // Build the service provider.
+                // Zbuduj usługodawcę
                 var serviceProvider = services.BuildServiceProvider();
 
-                // Create a scope to obtain a reference to the database contexts
+                // Stwórz zakres i upewnij się, że baza danych jest utworzona
                 using (var scope = serviceProvider.CreateScope())
                 {
                     var scopedServices = scope.ServiceProvider;
                     var db = scopedServices.GetRequiredService<FootballContext>();
 
-                    // Ensure the database is created.
+                    // Upewnij się, że baza danych została utworzona
                     db.Database.EnsureCreated();
                 }
                 
+                // Dodanie klienta HTTP z nagłówkiem X-Api-Key
                 services.AddHttpClient("TestClient", client =>
                 {
                     client.DefaultRequestHeaders.Add("X-Api-Key", _apiKey);
@@ -85,11 +102,13 @@ namespace IntegrationTests
 
             return base.CreateHost(builder);
         }
-        
+
+        // Metoda do tworzenia klienta HTTP z kluczem API
         public HttpClient CreateClientWithApiKey()
         {
             var client = this.WithWebHostBuilder(builder =>
             {
+                // Ustawienie środowiska na testowe
                 builder.UseEnvironment("Test");
             }).CreateClient(new WebApplicationFactoryClientOptions
             {
@@ -97,11 +116,13 @@ namespace IntegrationTests
                 BaseAddress = new Uri("http://localhost")
             });
 
+            // Dodanie nagłówka X-Api-Key do żądań
             client.DefaultRequestHeaders.Add("X-Api-Key", _apiKey);
 
             return client;
         }
 
+        // Zatrzymanie MockServer i czyszczenie zasobów po zakończeniu testów
         public new void Dispose()
         {
             if (UseMockServer && MockServer != null)

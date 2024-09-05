@@ -74,8 +74,29 @@ public class FullFlowWithMockResponseTests: IClassFixture<CustomWebApplicationFa
         Assert.Equal("England", leagues.First().Country);
     }
     
+    /// <summary>
+    /// OK, więc tutaj zatrzymuję MockServer, bo jak go nie wyłączę, to może dalej działać w tle
+    /// i żreć zasoby jak wariat. Jeśli tego nie zrobię, to system może się krztusić albo 
+    /// testy się posypią, bo MockServer zostanie na tym samym porcie.
+    ///
+    /// A co do _factory.Dispose(), to też ważne, bo WebApplicationFactory<T> zajmuje się 
+    /// ogarnianiem aplikacji testowej. Jak tego nie wywołam, to fabryka może dalej trzymać 
+    /// zasoby, które powinny być już dawno zwolnione.
+    /// 
+    /// Dlaczego warto to ogarnąć:
+    /// - Oszczędzasz zasoby: MockServer nie będzie wisiał w tle i zjadał pamięci.
+    /// - Testy będą bardziej stabilne: Bez tego mogą pojawiać się konflikty portów albo jakieś dziwne bugi.
+    /// </summary>
     public void Dispose()
     {
+        if (_factory.UseMockServer && _factory.MockServer != null)
+        {
+            // Wyłączam MockServer, bo inaczej będzie wisiał w pamięci
+            _factory.MockServer.Stop();
+            _factory.MockServer.Dispose();
+        }
+
+        // Wywołuję Dispose() na fabryce, żeby zwolniła swoje zasoby
         _factory.Dispose();
     }
 }
