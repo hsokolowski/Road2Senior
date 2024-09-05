@@ -36,7 +36,7 @@ steps:
 - task: AzureKeyVault@2
   inputs:
     azureSubscription: 'Road2Senior-Azure-ProdConnection'  # Nazwa połączenia z Azure DevOps
-    KeyVaultName: 'https://apifootball.vault.azure.net/'  # Adres URL do Key Vault
+    KeyVaultName: 'apifootball'  # Adres URL do Key Vault
     SecretsFilter: '*'  # Pobieranie wszystkich sekretów
     RunAsPreJob: true  # Zapewnienie, że klucze są pobierane przed właściwym buildem
 
