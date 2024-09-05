@@ -12,7 +12,10 @@ pool:
 variables:
   solution: '**/*.sln'  # Zmienna definiująca ścieżkę do pliku .sln
   buildPlatform: 'Any CPU'  # Platforma, na którą ma być budowany projekt
-  buildConfiguration: 'Release'  # Konfiguracja builda (Debug/Release)
+  buildConfiguration: 'Release'  # Konfiguracja builda (Debug/Release) 
+  AZURE_CLIENT_ID: $(azureClientId)
+  AZURE_CLIENT_SECRET: $(azureClientSecret)  # Upewnij się, że azureClientSecret jest ustawione w zmiennych pipeline
+  AZURE_TENANT_ID: $(azureTenantId) 
 
 steps:
 # Krok 1: Instalacja .NET SDK
