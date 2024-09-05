@@ -4,34 +4,60 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- master
+- master  # Uruchamianie pipeline przy pushu do brancha master
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'windows-latest'  # Używanie maszyny z Windows
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+  solution: '**/*.sln'  # Zmienna definiująca ścieżkę do pliku .sln
+  buildPlatform: 'Any CPU'  # Platforma, na którą ma być budowany projekt
+  buildConfiguration: 'Release'  # Konfiguracja builda (Debug/Release)
 
 steps:
+# Krok 1: Instalacja .NET SDK
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '8.0.203' 
-    installationPath: $(Agent.ToolsDirectory)/dotnet
+    version: '8.0.203'  # Używana wersja SDK .NET
+    installationPath: $(Agent.ToolsDirectory)/dotnet  # Ścieżka instalacji SDK na maszynie builda
 
+# Krok 2: Logowanie do Azure (potrzebne, aby pobierać sekrety z Key Vault)
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'Road2Senior-Azure-ProdConnection'  # Nazwa połączenia z Azure DevOps
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az login --service-principal -u $(AZURE_CLIENT_ID) -p $(AZURE_CLIENT_SECRET) --tenant $(AZURE_TENANT_ID)
+      echo "Zalogowano do Azure"
+
+# Krok 3: Pobieranie kluczy z Azure Key Vault
+- task: AzureKeyVault@2
+  inputs:
+    azureSubscription: 'Road2Senior-Azure-ProdConnection'  # Nazwa połączenia z Azure DevOps
+    KeyVaultName: 'https://apifootball.vault.azure.net/'  # Adres URL do Key Vault
+    SecretsFilter: '*'  # Pobieranie wszystkich sekretów
+    RunAsPreJob: true  # Zapewnienie, że klucze są pobierane przed właściwym buildem
+
+# Krok 4: Przywracanie zależności
 - script: |
-    dotnet restore
-    dotnet build --configuration $(buildConfiguration)
+    dotnet restore  # Przywrócenie wszystkich zależności w projekcie
+  displayName: 'Restore dependencies'
+
+# Krok 5: Budowanie projektu
+- script: |
+    dotnet build --configuration $(buildConfiguration)  # Build projektu w konfiguracji Release
   displayName: 'Build project'
 
+# Krok 6: Uruchamianie testów jednostkowych
 - script: |
-    dotnet test --configuration $(buildConfiguration)
+    dotnet test --configuration $(buildConfiguration)  # Testowanie projektu w konfiguracji Release
   displayName: 'Run tests'
 
+# Krok 7: Publikacja artefaktów builda
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'  # Ścieżka do artefaktów, które mają być publikowane
+    ArtifactName: 'drop'  # Nazwa artefaktu
+    publishLocation: 'Container'  # Publikowanie artefaktów do kontenera (np. w Azure DevOps)
