@@ -14,8 +14,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddHttpClient<IApiFootballClient, ApiFootballClient>(client =>
         {
-            client.BaseAddress = new Uri(configuration["ApiFootball:BaseUrl"]);
-            client.DefaultRequestHeaders.Add("X-RapidAPI-Key", configuration["ApiFootball:ApiKey"]);
+            client.BaseAddress = new Uri(configuration.GetSection("Infrastructure")["ApiFootball:BaseUrl"]);
+            client.DefaultRequestHeaders.Add("X-RapidAPI-Key", configuration["ApiKey"]);
         });
 
         services.AddMemoryCache();

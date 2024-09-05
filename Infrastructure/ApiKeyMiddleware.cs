@@ -20,7 +20,7 @@ public class ApiKeyMiddleware
             return;
         }
 
-        var apiKey = configuration.GetSection("Infrastructure:ApiFootball").GetValue<string>("ApiKey");
+        var apiKey = configuration.GetValue<string>("ApiKey");
 
         if (!apiKey.Equals(extractedApiKey))
         {

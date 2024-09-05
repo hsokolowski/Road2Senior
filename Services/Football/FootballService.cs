@@ -18,7 +18,7 @@ namespace Services.Football
 
         public async Task<IEnumerable<LeagueModel>> GetLeaguesAsync(int id)
         {
-            return await _cacheService.GetOrAddAsync("leagues", async () =>
+            return await _cacheService.GetOrAddAsync($"leagues{id}", async () =>
             {
                 var apiResponse = await _apiFootballClient.GetLeagueAsync(id);
                 List<LeagueModel> leagueModels = new List<LeagueModel>();
