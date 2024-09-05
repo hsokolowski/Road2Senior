@@ -15,15 +15,6 @@ variables:
   buildConfiguration: 'Release'  # Konfiguracja builda (Debug/Release)
 
 steps:
-- task: AzurePowerShell@5
-  inputs:
-    azureSubscription: 'Road2Senior-Azure-ProdConnection'
-    ScriptType: 'InlineScript'
-    Inline: |
-      az login --service-principal -u $(AZURE_CLIENT_ID) -p $(AZURE_CLIENT_SECRET) --tenant $(AZURE_TENANT_ID)
-      echo "Zalogowano do Azure"
-    azurePowerShellVersion: 'LatestVersion'  # Ustawienie wersji PowerShell
-  
 # Krok 1: Instalacja .NET SDK
 - task: UseDotNet@2
   inputs:
