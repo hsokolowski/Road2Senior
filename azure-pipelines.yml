@@ -15,6 +15,12 @@ variables:
   buildConfiguration: 'Release'  # Konfiguracja builda (Debug/Release)
 
 steps:
+- task: AzurePowerShell@5
+  inputs:
+    azureSubscription: 'Road2Senior-Azure-ProdConnection'
+    ScriptType: 'InlineScript'
+    Inline: 'Install-Module -Name Az.Accounts -Force'
+    pwsh: true
 # Krok 1: Instalacja .NET SDK
 - task: UseDotNet@2
   inputs:
