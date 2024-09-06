@@ -54,8 +54,11 @@ steps:
   displayName: 'Build project'  # Wyświetlanie w logach: Budowanie projektu
 
 # Krok 6: Uruchamianie testów jednostkowych
-- script: |
-    dotnet test --configuration $(buildConfiguration)
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: '$(solution)'  
+    arguments: '--configuration $(buildConfiguration)'
   displayName: 'Run tests'  # Wyświetlanie w logach: Uruchamianie testów jednostkowych
 
 # Krok 7: Publikacja artefaktów builda
