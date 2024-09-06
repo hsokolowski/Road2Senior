@@ -60,6 +60,10 @@ steps:
     projects: '$(solution)'  
     arguments: '--configuration $(buildConfiguration)'
   displayName: 'Run tests'  # Wyświetlanie w logach: Uruchamianie testów jednostkowych
+  env:
+    AZURE_CLIENT_ID: $(azureClientId)
+    AZURE_CLIENT_SECRET: $(azureClientSecret)  # Upewnij się, że azureClientSecret jest ustawione w zmiennych pipeline
+    AZURE_TENANT_ID: $(azureTenantId) 
 
 # Krok 7: Publikacja artefaktów builda
 - task: PublishBuildArtifacts@1
