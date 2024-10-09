@@ -48,6 +48,15 @@ steps:
     dotnet restore
   displayName: 'Restore dependencies'  # Wyświetlanie w logach: Przywracanie zależności
 
+- task: Docker@2
+  displayName: 'Run SQL Server container'
+  inputs:
+    command: 'run'
+    image: 'mcr.microsoft.com/mssql/server:2019-latest'
+    containerName: 'road2senior-mssql-container'
+    envVars: 'SA_PASSWORD=MyStrong@Passw0rd ACCEPT_EULA=Y'
+    ports: '1433:1433'
+    
 # Krok 5: Budowanie projektu
 - script: |
     dotnet build --configuration $(buildConfiguration)
