@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace Database.Migrations
+namespace Database.Migrations.SqliteMigrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialSqliteMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,8 +16,8 @@ namespace Database.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Country = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    Country = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Season = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>

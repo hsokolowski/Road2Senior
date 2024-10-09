@@ -1,6 +1,8 @@
 using Azure.Identity;
 using Database;
+using Database.Repositories;
 using Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Services;
 
@@ -17,7 +19,7 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnCh
 
 builder.Services.RegisterInfrastructure(builder.Configuration.GetSection("Infrastructure"));
 builder.Services.RegisterServices(builder.Configuration);
-builder.Services.RegisterDb(builder.Configuration.GetSection("Infrastructure"), builder.Environment);
+builder.Services.RegisterDb(builder.Configuration, builder.Environment);
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -60,6 +62,19 @@ if (app.Environment.IsDevelopment())
 }
 app.UseMiddleware<ApiKeyMiddleware>();
 app.UseHttpsRedirection();
+
+app.MapGet("/test-db", async (FootballContext db) =>
+{
+    try
+    {
+        await db.Database.CanConnectAsync();
+        return Results.Ok("Database connection successful!");
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+});
 
 var summaries = new[]
 {
