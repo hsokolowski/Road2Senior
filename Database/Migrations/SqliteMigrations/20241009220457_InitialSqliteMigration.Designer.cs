@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Database.Migrations
+namespace Database.Migrations.SqliteMigrations
 {
-    [DbContext(typeof(FootballContext))]
-    [Migration("20240625225132_InitialCreate")]
-    partial class InitialCreate
+    [DbContext(typeof(SqliteFootballContext))]
+    [Migration("20241009220457_InitialSqliteMigration")]
+    partial class InitialSqliteMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,14 +23,17 @@ namespace Database.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Sqlite:Autoincrement", true);
 
                     b.Property<string>("Country")
                         .IsRequired()
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Season")
