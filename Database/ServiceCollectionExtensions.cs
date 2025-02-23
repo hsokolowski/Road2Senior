@@ -1,5 +1,4 @@
-﻿using Database.Repositories;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,28 +10,24 @@ public static class ServiceCollectionExtensions
 {
     public static void RegisterDb(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
-        // Pobierz typ bazy danych z konfiguracji
-        var databaseType = configuration.GetValue<string>("DatabaseType", "Sqlite");
-
         if (environment.IsEnvironment("Test"))
         {
-            // Użycie InMemory w testach
+            // Testy integracyjne używają InMemoryDb
             services.AddDbContext<FootballContext>(options =>
                 options.UseInMemoryDatabase("InMemoryDbForTesting"));
+            return;
         }
-        else if (databaseType.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
+
+        //  Pobranie connection stringa do SQL Server
+        var sqlServerConnectionString = configuration.GetConnectionString("SqlServerConnection");
+
+        if (string.IsNullOrEmpty(sqlServerConnectionString))
         {
-            // Użycie SQL Server w produkcji
-            services.AddDbContext<FootballContext>(options =>
-                options.UseSqlServer(configuration["SqlServerConnectionString"],
-                    b => b.MigrationsAssembly("Database.Migrations.SqlServerMigrations")));
+            throw new InvalidOperationException("No connection string in Key Vault!");
         }
-        else if (databaseType.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
-        {
-            // Użycie SQLite w lokalnym środowisku deweloperskim
-            services.AddDbContext<FootballContext>(options =>
-                options.UseSqlite(configuration.GetConnectionString("SqliteConnection"),
-                    b => b.MigrationsAssembly("Database.Migrations.SqliteMigrations")));
-        }
+
+        // Produkcja i lokalne środowisko używają SQL Server
+        services.AddDbContext<FootballContext>(options =>
+            options.UseSqlServer(sqlServerConnectionString));
     }
 }
