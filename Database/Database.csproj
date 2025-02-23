@@ -29,9 +29,4 @@
       </Reference>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Migrations\SqliteMigrations\" />
-      <Folder Include="Migrations\SqlServerMigrations\" />
-    </ItemGroup>
-
 </Project>

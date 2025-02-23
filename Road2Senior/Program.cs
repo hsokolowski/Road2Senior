@@ -1,8 +1,6 @@
 using Azure.Identity;
 using Database;
-using Database.Repositories;
 using Infrastructure;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Services;
 
@@ -14,12 +12,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-    .AddAzureKeyVault(new Uri(builder.Configuration["KeyVaultUri"]), new DefaultAzureCredential());
+builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
+var keyVaultUri = builder.Configuration["KeyVaultUri"];
+if (!string.IsNullOrEmpty(keyVaultUri))
+{
+    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
+}
+
+builder.Services.RegisterDb(builder.Configuration, builder.Environment);
 builder.Services.RegisterInfrastructure(builder.Configuration.GetSection("Infrastructure"));
 builder.Services.RegisterServices(builder.Configuration);
-builder.Services.RegisterDb(builder.Configuration, builder.Environment);
 
 builder.Services.AddSwaggerGen(c =>
 {
