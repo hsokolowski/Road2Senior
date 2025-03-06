@@ -66,9 +66,26 @@ steps:
     AZURE_CLIENT_SECRET: $(azureClientSecret)  # Upewnij się, że azureClientSecret jest ustawione w zmiennych pipeline
     AZURE_TENANT_ID: $(azureTenantId) 
 
-# Krok 7: Publikacja artefaktów builda
+# Krok 7: Publikacja paczki aplikacji
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish'
+    zipAfterPublish: true
+  displayName: 'Publish app'
+
+# Krok 8:
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'  # Ścieżka do artefaktów, które mają być publikowane
     ArtifactName: 'drop'  # Nazwa artefaktu
     publishLocation: 'Container'  # Publikowanie artefaktów do kontenera
+
+# Krok 9: Deployment do Azure App Service
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'Road2Senior-Azure-ProdConnection'
+    appType: 'webApp'
+    appName: 'apifootball-web'  # <- Podmień na prawdziwą nazwę App Service
+    package: '$(Build.ArtifactStagingDirectory)/publish.zip'
