@@ -1,46 +1,32 @@
 ﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 
-namespace Database.Repositories
+public class FootballContext : DbContext
 {
-    public class FootballContext : DbContext
+    public DbSet<LeagueEntity> Leagues { get; set; }
+
+    public FootballContext(DbContextOptions<FootballContext> options) : base(options) { }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        public DbSet<LeagueEntity> Leagues { get; set; }
+        modelBuilder.Entity<LeagueEntity>()
+            .HasKey(l => l.Id);
 
-        public FootballContext(DbContextOptions<FootballContext> options) : base(options)
-        {
-        }
-        
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlite("Data Source=FootballDB.db", b => b.MigrationsAssembly("Infrastructure"));
-            }
-        }
-        
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<LeagueEntity>()
-                .HasKey(l => l.Id);
+        modelBuilder.Entity<LeagueEntity>()
+            .Property(l => l.Id)
+            .ValueGeneratedOnAdd()
+            .UseIdentityColumn();  // Tylko dla SQL Server
 
-            modelBuilder.Entity<LeagueEntity>()
-                .Property(l => l.Id)
-                .ValueGeneratedOnAdd();
+        modelBuilder.Entity<LeagueEntity>()
+            .Property(l => l.Name)
+            .HasMaxLength(50)
+            .IsRequired();
 
-            base.OnModelCreating(modelBuilder);
-        }
-    }
-    
-    public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<FootballContext>
-    {
-        public FootballContext CreateDbContext(string[] args)
-        {
-            var optionsBuilder = new DbContextOptionsBuilder<FootballContext>();
-            optionsBuilder.UseSqlite("Data Source=FootballDB.db", b => b.MigrationsAssembly("Database"));
+        modelBuilder.Entity<LeagueEntity>()
+            .Property(l => l.Country)
+            .HasMaxLength(50)
+            .IsRequired();
 
-            return new FootballContext(optionsBuilder.Options);
-        }
+        base.OnModelCreating(modelBuilder);
     }
 }

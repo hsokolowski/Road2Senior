@@ -1,8 +1,5 @@
 ﻿using Contracts;
-using Database.Repositories;
 using Domain.Entities;
-using Domain.Football.Responses;
-using Infrastructure.Cache;
 using Infrastructure.Timing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

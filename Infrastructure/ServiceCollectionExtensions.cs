@@ -1,12 +1,5 @@
-﻿using Database.Repositories;
-using Infrastructure.Cache;
-using Infrastructure.Timing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Services.DatabaseService;
-using Services.EndpointClients;
-using Services.Football;
 
 namespace Infrastructure;
 

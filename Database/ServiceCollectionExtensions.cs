@@ -1,5 +1,4 @@
-﻿using Database.Repositories;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,13 +12,22 @@ public static class ServiceCollectionExtensions
     {
         if (environment.IsEnvironment("Test"))
         {
+            // Testy integracyjne używają InMemoryDb
             services.AddDbContext<FootballContext>(options =>
                 options.UseInMemoryDatabase("InMemoryDbForTesting"));
+            return;
         }
-        else
+
+        //  Pobranie connection stringa do SQL Server
+        var sqlServerConnectionString = configuration.GetConnectionString("SqlServerConnection");
+
+        if (string.IsNullOrEmpty(sqlServerConnectionString))
         {
-            services.AddDbContext<FootballContext>(options =>
-                options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
+            throw new InvalidOperationException("No connection string in Key Vault!");
         }
+
+        // Produkcja i lokalne środowisko używają SQL Server
+        services.AddDbContext<FootballContext>(options =>
+            options.UseSqlServer(sqlServerConnectionString));
     }
 }

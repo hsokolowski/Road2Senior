@@ -12,12 +12,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-    .AddAzureKeyVault(new Uri(builder.Configuration["KeyVaultUri"]), new DefaultAzureCredential());
+builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
+var keyVaultUri = builder.Configuration["KeyVaultUri"];
+if (!string.IsNullOrEmpty(keyVaultUri))
+{
+    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
+}
+
+builder.Services.RegisterDb(builder.Configuration, builder.Environment);
 builder.Services.RegisterInfrastructure(builder.Configuration.GetSection("Infrastructure"));
 builder.Services.RegisterServices(builder.Configuration);
-builder.Services.RegisterDb(builder.Configuration.GetSection("Infrastructure"), builder.Environment);
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -60,6 +65,19 @@ if (app.Environment.IsDevelopment())
 }
 app.UseMiddleware<ApiKeyMiddleware>();
 app.UseHttpsRedirection();
+
+app.MapGet("/test-db", async (FootballContext db) =>
+{
+    try
+    {
+        await db.Database.CanConnectAsync();
+        return Results.Ok("Database connection successful!");
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+});
 
 var summaries = new[]
 {

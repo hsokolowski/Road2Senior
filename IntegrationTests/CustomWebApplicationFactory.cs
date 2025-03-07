@@ -1,5 +1,4 @@
 ﻿using Azure.Identity;
-using Database.Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -28,16 +27,16 @@ namespace IntegrationTests
             // Konfiguracja configu z pliku appsettings.json i KV
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json") // Wczytaj plik appsettings.json
-                .AddAzureKeyVault(new Uri("https://apifootball.vault.azure.net/"), new DefaultAzureCredential()) // Wczytaj KV 
+                .AddAzureKeyVault(new Uri("https://apifootballkeyvolt.vault.azure.net/"), new DefaultAzureCredential()) // Wczytaj KV 
                 .Build();
-
+            
             // Pobierz wartość klucza API z konfiguracji
             _apiKey = config.GetValue<string>("ApiKey");
 
             // Sprawdzenie, czy klucz API został poprawnie wczytany
             if (string.IsNullOrEmpty(_apiKey))
             {
-                throw new InvalidOperationException("ApiKey nie został poprawnie wczytany z pliku appsettings.json.");
+                throw new InvalidOperationException("ApiKey didn't set from KV");
             }
         }
 
@@ -46,6 +45,15 @@ namespace IntegrationTests
         {
             builder.ConfigureServices(services =>
             {
+                // Usuń kontekst bazy danych aplikacji, jeśli istnieje
+                var descriptorDbContext = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(DbContextOptions<FootballContext>));
+
+                if (descriptorDbContext != null)
+                {
+                    services.Remove(descriptorDbContext);
+                }
+                
                 if (UseMockServer)
                 {
                     // Rozpocznij działanie MockServer, jeśli jest w użyciu
@@ -63,15 +71,6 @@ namespace IntegrationTests
                     {
                         client.BaseAddress = new Uri(MockServer.Url + "/api/football/");
                     });
-                }
-
-                // Usuń kontekst bazy danych aplikacji, jeśli istnieje
-                var descriptorDbContext = services.SingleOrDefault(
-                    d => d.ServiceType == typeof(DbContextOptions<FootballContext>));
-
-                if (descriptorDbContext != null)
-                {
-                    services.Remove(descriptorDbContext);
                 }
 
                 // Dodaj kontekst bazy danych in-memory do testów
