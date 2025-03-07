@@ -70,7 +70,7 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
-    publishWebProjects: false
+    publishWebProjects: true
     arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish'
     zipAfterPublish: true
   displayName: 'Publish app'
@@ -88,7 +88,7 @@ steps:
 # Krok 9: Publikacja artefaktów builda
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/publish'  # Ścieżka do artefaktów, które mają być publikowane
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/publish.zip'  # Ścieżka do artefaktów, które mają być publikowane
     ArtifactName: 'drop'  # Nazwa artefaktu
     publishLocation: 'Container'  # Publikowanie artefaktów do kontenera
   displayName: 'Publish artifacts'
@@ -99,5 +99,5 @@ steps:
     azureSubscription: 'Road2Senior-NewConnection2025'
     appType: 'webApp'
     appName: 'apifootball-web'  # <- Podmień na prawdziwą nazwę App Service
-    package: '$(Build.ArtifactStagingDirectory)/publish/Road2Senior.zip'
+    package: '$(Pipeline.Workspace)/drop/publish.zip'
   displayName: 'Deploy to Azure Web App'
