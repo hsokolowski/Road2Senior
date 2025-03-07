@@ -85,7 +85,7 @@ steps:
     replaceExistingArchive: true
   displayName: 'Zip published files'
 
-# Krok 9: ublikacja artefaktów builda
+# Krok 9: Publikacja artefaktów builda
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)/publish.zip'  # Ścieżka do artefaktów, które mają być publikowane
@@ -99,5 +99,5 @@ steps:
     azureSubscription: 'Road2Senior-NewConnection2025'
     appType: 'webApp'
     appName: 'apifootball-web'  # <- Podmień na prawdziwą nazwę App Service
-    package: '$(Pipeline.Workspace)/drop/publish.zip'
+    package: '$$(Build.ArtifactStagingDirectory)/publish.zip'
   displayName: 'Deploy to Azure Web App'
