@@ -86,12 +86,12 @@ steps:
 #  displayName: 'Zip published files'
 
 # Krok 9: Publikacja artefaktów builda
-#- task: PublishBuildArtifacts@1
-#  inputs:
-#    PathtoPublish: '$(Build.ArtifactStagingDirectory)/publish.zip'  # Ścieżka do artefaktów, które mają być publikowane
-#    ArtifactName: 'drop'  # Nazwa artefaktu
-#    publishLocation: 'Container'  # Publikowanie artefaktów do kontenera
-#  displayName: 'Publish artifacts'
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/publish'  # Ścieżka do artefaktów, które mają być publikowane
+    ArtifactName: 'drop'  # Nazwa artefaktu
+    publishLocation: 'Container'  # Publikowanie artefaktów do kontenera
+  displayName: 'Publish artifacts'
 
 # Krok 10: Deployment do Azure App Service
 - task: AzureWebApp@1
