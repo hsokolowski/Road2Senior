@@ -70,7 +70,7 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
-    projects: '**/Road2Senior/Road2Senior.csproj'
+    projects: '**/Road2Senior.csproj'
     arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish'
     zipAfterPublish: false
   displayName: 'Publish app'
