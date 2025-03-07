@@ -25,20 +25,20 @@ steps:
     version: '8.0.203'  # Używana wersja SDK .NET
     installationPath: $(Agent.ToolsDirectory)/dotnet  # Ścieżka instalacji SDK na maszynie builda
 
-# Krok 2: Logowanie do Azure (potrzebne, aby pobierać sekrety z Key Vault)
-- task: AzureCLI@2
-  inputs:
-    azureSubscription: 'Road2Senior-Azure-ProdConnection'  # Nazwa połączenia z Azure DevOps
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      az login --service-principal -u $(azureClientId) -p $(azureClientSecret) --tenant $(azureTenantId)
-      echo "Zalogowano do Azure"
+# Krok 2: Logowanie do Azure (potrzebne, aby pobierać sekrety z Key Vault) (już niepotrzebne przy federacji)
+#- task: AzureCLI@2
+#  inputs:
+#    azureSubscription: 'Road2Senior-NewConnection2025'  # Nazwa połączenia z Azure DevOps
+#    scriptType: 'bash'
+#    scriptLocation: 'inlineScript'
+#    inlineScript: |
+#      az login --service-principal -u $(azureClientId) -p $(azureClientSecret) --tenant $(azureTenantId)
+#      echo "Zalogowano do Azure"
 
 # Krok 3: Pobieranie kluczy z Azure Key Vault
 - task: AzureKeyVault@2
   inputs:
-    azureSubscription: 'Road2Senior-Azure-ProdConnection'  # Nazwa połączenia z Azure DevOps
+    azureSubscription: 'Road2Senior-NewConnection2025'   # Nazwa połączenia z Azure DevOps
     KeyVaultName: 'apifootball'  # Nazwa Key Vault
     SecretsFilter: '*'  # Pobieranie wszystkich sekretów
     RunAsPreJob: true  # Zapewnienie, że klucze są pobierane przed właściwym buildem
@@ -85,7 +85,7 @@ steps:
 # Krok 9: Deployment do Azure App Service
 - task: AzureWebApp@1
   inputs:
-    azureSubscription: 'Road2Senior-Azure-ProdConnection'
+    azureSubscription: 'Road2Senior-NewConnection2025'
     appType: 'webApp'
     appName: 'apifootball-web'  # <- Podmień na prawdziwą nazwę App Service
     package: '$(Build.ArtifactStagingDirectory)/publish.zip'
