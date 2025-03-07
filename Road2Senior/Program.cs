@@ -99,6 +99,17 @@ app.MapGet("/weatherforecast", () =>
     .WithName("GetWeatherForecast")
     .WithOpenApi();
 
+app.MapGet("/", () => Results.Ok(new
+{
+    Message = "API działa poprawnie 🚀",
+    Endpoints = new[]
+    {
+        "/swagger",
+        "/weatherforecast",
+        "/test-db"
+    }
+}));
+
 app.MapControllers();
 app.Run();
 
