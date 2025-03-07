@@ -67,13 +67,18 @@ steps:
     AZURE_TENANT_ID: $(azureTenantId) 
 
 # Krok 7: Publikacja paczki aplikacji
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'publish'
-    projects: '**/Road2Senior.csproj'
-    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish'
-    zipAfterPublish: false
-  displayName: 'Publish app'
+#- task: DotNetCoreCLI@2
+#  inputs:
+#    command: 'publish'
+#    projects: '**/Road2Senior.csproj'
+#    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish'
+#    zipAfterPublish: false
+#  displayName: 'Publish app(task)'
+
+# Krok 7: Publikacja paczki aplikacji
+- script: |
+    dotnet publish "$(Build.SourcesDirectory)/Road2Senior/Road2Senior.csproj" --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish
+  displayName: 'Publish app (script)'
 
 # Krok 8: Pakowanie do .zip
 - task: ArchiveFiles@2
