@@ -72,20 +72,32 @@ steps:
     command: 'publish'
     publishWebProjects: true
     arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish'
-    zipAfterPublish: true
+    zipAfterPublish: false
   displayName: 'Publish app'
 
-# Krok 8: ublikacja artefaktów builda
+# Krok 8: Pakowanie do .zip
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/publish'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/publish.zip'
+    replaceExistingArchive: true
+  displayName: 'Zip published files'
+
+# Krok 9: ublikacja artefaktów builda
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/publish'  # Ścieżka do artefaktów, które mają być publikowane
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/publish.zip'  # Ścieżka do artefaktów, które mają być publikowane
     ArtifactName: 'drop'  # Nazwa artefaktu
     publishLocation: 'Container'  # Publikowanie artefaktów do kontenera
+  displayName: 'Publish artifacts'
 
-# Krok 9: Deployment do Azure App Service
+# Krok 10: Deployment do Azure App Service
 - task: AzureWebApp@1
   inputs:
     azureSubscription: 'Road2Senior-NewConnection2025'
     appType: 'webApp'
     appName: 'apifootball-web'  # <- Podmień na prawdziwą nazwę App Service
     package: '$(Pipeline.Workspace)/drop/publish.zip'
+  displayName: 'Deploy to Azure Web App'
