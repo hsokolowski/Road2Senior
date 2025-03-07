@@ -93,6 +93,13 @@ steps:
     publishLocation: 'Container'  # Publikowanie artefaktów do kontenera
   displayName: 'Publish artifacts'
 
+# Krok 9.5: Pobranie artefaktów przed deployem
+- task: DownloadPipelineArtifact@2
+  inputs:
+    artifactName: 'drop'
+    targetPath: '$(Pipeline.Workspace)/drop'
+  displayName: 'Download artifacts'
+
 # Krok 10: Deployment do Azure App Service
 - task: AzureWebApp@1
   inputs:
