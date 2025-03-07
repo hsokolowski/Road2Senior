@@ -99,5 +99,5 @@ steps:
     azureSubscription: 'Road2Senior-NewConnection2025'
     appType: 'webApp'
     appName: 'apifootball-web'  # <- Podmień na prawdziwą nazwę App Service
-    package: '$$(Build.ArtifactStagingDirectory)/publish.zip'
+    package: '$(Build.ArtifactStagingDirectory)/publish.zip'
   displayName: 'Deploy to Azure Web App'
