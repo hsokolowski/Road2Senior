@@ -70,20 +70,20 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
-    publishWebProjects: true
+    projects: '**/Road2Senior/Road2Senior.csproj'
     arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish'
-    zipAfterPublish: true
+    zipAfterPublish: false
   displayName: 'Publish app'
 
 # Krok 8: Pakowanie do .zip
-#- task: ArchiveFiles@2
-#  inputs:
-#    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/publish'
-#    includeRootFolder: false
-#    archiveType: 'zip'
-#    archiveFile: '$(Build.ArtifactStagingDirectory)/publish.zip'
-#    replaceExistingArchive: true
-#  displayName: 'Zip published files'
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/publish'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/publish.zip'
+    replaceExistingArchive: true
+  displayName: 'Zip published files'
 
 # Krok 9: Publikacja artefaktów builda
 - task: PublishBuildArtifacts@1
