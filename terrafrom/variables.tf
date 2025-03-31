@@ -20,3 +20,9 @@ variable "sql_admin_password" {
   type        = string
   sensitive   = true  # oznaczenie jako dane wrażliwe
 }
+
+variable "tenant_id" {
+  description = "Azure Active Directory Tenant ID"
+  type        = string
+  sensitive   = true
+}

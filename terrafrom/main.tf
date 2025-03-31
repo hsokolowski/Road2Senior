@@ -121,7 +121,7 @@ resource "azurerm_key_vault" "keyvault" {
   name                      = "ApiFootballKeyVolt"
   location                  = "polandcentral"
   resource_group_name       = azurerm_resource_group.rg.name
-  tenant_id                 = "9c8176a3-82ef-4e17-b391-373802f3d8d4" # to CIklum
+  tenant_id                 = var.tenant_id # to CIklum
   sku_name                  = "standard"
   enable_rbac_authorization = true
   purge_protection_enabled  = false
