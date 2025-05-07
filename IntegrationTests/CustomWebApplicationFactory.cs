@@ -1,11 +1,13 @@
-﻿using Azure.Identity;
+﻿using Application.External;
+using Azure.Identity;
+using Infrastructure.Database.Repositories;
+using Infrastructure.External.ApiFootball;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Services.EndpointClients;
 using WireMock.Server;
 
 namespace IntegrationTests

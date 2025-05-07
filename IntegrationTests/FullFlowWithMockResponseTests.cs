@@ -1,7 +1,9 @@
 ﻿using System.Text.Json;
 using Contracts;
-using Domain.Football.Responses;
+using Contracts.ApiFootball;
+using Contracts.League;
 using Microsoft.AspNetCore.Hosting;
+using Road2Senior;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 
@@ -65,7 +67,7 @@ public class FullFlowWithMockResponseTests: IClassFixture<CustomWebApplicationFa
         var content = await response.Content.ReadAsStringAsync();
 
         // Deserializacja odpowiedzi
-        var leagues =  JsonSerializer.Deserialize<IEnumerable<LeagueModel>>(content, new JsonSerializerOptions {AllowTrailingCommas = true, PropertyNameCaseInsensitive = true});
+        var leagues =  JsonSerializer.Deserialize<IEnumerable<LeagueDto>>(content, new JsonSerializerOptions {AllowTrailingCommas = true, PropertyNameCaseInsensitive = true});
         
         // Sprawdzenie, czy odpowiedź jest zgodna z oczekiwaniami
         Assert.NotNull(leagues);

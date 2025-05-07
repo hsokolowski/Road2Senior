@@ -1,9 +1,10 @@
 using System.Text;
 using System.Text.Json;
 using Contracts;
+using Contracts.League;
 using Domain.Entities;
-using Domain.Football.Responses;
 using Microsoft.AspNetCore.Hosting;
+using Road2Senior;
 
 namespace IntegrationTests;
 
@@ -26,7 +27,7 @@ public class FullFlowTests : IClassFixture<CustomWebApplicationFactory<Program>>
         var response = await _client.GetAsync(getUrl);
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
-        var leagues =  JsonSerializer.Deserialize<IEnumerable<LeagueModel>>(content, new JsonSerializerOptions {AllowTrailingCommas = true, PropertyNameCaseInsensitive = true});
+        var leagues =  JsonSerializer.Deserialize<IEnumerable<LeagueDto>>(content, new JsonSerializerOptions {AllowTrailingCommas = true, PropertyNameCaseInsensitive = true});
 
         // Krok 2: Zapisz ligę do bazy danych
         var saveUrl = "/api/database/league";

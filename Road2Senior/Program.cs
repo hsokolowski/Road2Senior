@@ -1,17 +1,19 @@
+using Application;
 using Azure.Identity;
-using Database;
 using Infrastructure;
+using Infrastructure.Database.Repositories;
 using Microsoft.OpenApi.Models;
-using Services;
+using Road2Senior;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+//builder.Services.AddControllers();
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddSwaggerGen();
 
+// Konfiguracja appsettings.json + Azure Key Vault
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
 var keyVaultUri = builder.Configuration["KeyVaultUri"];
@@ -20,10 +22,17 @@ if (!string.IsNullOrEmpty(keyVaultUri))
     builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
 }
 
-builder.Services.RegisterDb(builder.Configuration, builder.Environment);
-builder.Services.RegisterInfrastructure(builder.Configuration.GetSection("Infrastructure"));
-builder.Services.RegisterServices(builder.Configuration);
+// Dodanie usług aplikacji (Application, Infrastructure, Database)
+builder.Services
+    .AddApplication()
+    .AddInfrastructure(builder.Configuration)
+    .AddDatabase(builder.Configuration, builder.Environment.EnvironmentName);
+//--builder.Services.RegisterDb(builder.Configuration, builder.Environment);
+//--builder.Services.RegisterInfrastructure(builder.Configuration.GetSection("Infrastructure"));
 
+// Kontrolery i Swagger
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
@@ -58,7 +67,7 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() && app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -113,9 +122,12 @@ app.MapGet("/", () => Results.Ok(new
 app.MapControllers();
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+namespace Road2Senior
 {
-    public int TemperatureF => 32 + (int) (TemperatureC / 0.5556);
-}
+    record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+    {
+        public int TemperatureF => 32 + (int) (TemperatureC / 0.5556);
+    }
 
-public partial class Program { }
+    public partial class Program { }
+}
