@@ -1,8 +1,4 @@
-﻿using Application.Database;
-using Application.External;
-using Contracts.Cache;
-using Contracts.Timing;
-using Infrastructure.Cache;
+﻿using Infrastructure.Cache;
 using Infrastructure.Database;
 using Infrastructure.Database.Repositories;
 using Infrastructure.External.ApiFootball;

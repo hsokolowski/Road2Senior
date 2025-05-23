@@ -1,4 +1,4 @@
-﻿namespace Contracts.Cache
+﻿namespace Infrastructure.Cache
 {
     public interface ICacheService
     {

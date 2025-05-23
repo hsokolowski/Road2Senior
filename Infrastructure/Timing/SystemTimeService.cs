@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Contracts.Timing;
 
 namespace Infrastructure.Timing
 {

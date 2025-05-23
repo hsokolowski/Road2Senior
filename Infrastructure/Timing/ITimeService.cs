@@ -1,4 +1,4 @@
-﻿namespace Contracts.Timing
+﻿namespace Infrastructure.Timing
 {
     public interface ITimeService
     {

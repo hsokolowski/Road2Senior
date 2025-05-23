@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using Application.External;
 using Contracts.ApiFootball;
 
 namespace Infrastructure.External.ApiFootball;

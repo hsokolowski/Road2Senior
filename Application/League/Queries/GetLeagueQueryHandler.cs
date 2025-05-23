@@ -1,7 +1,6 @@
-﻿using Application.External;
-using Contracts;
-using Contracts.Cache;
-using Contracts.League;
+﻿using Contracts.League;
+using Infrastructure.Cache;
+using Infrastructure.External.ApiFootball;
 using MediatR;
 
 namespace Application.League.Queries;

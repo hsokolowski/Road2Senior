@@ -1,9 +1,8 @@
-﻿using Application.Database;
-using Contracts;
+﻿using Contracts;
 using Contracts.League;
-using Contracts.Timing;
 using Domain.Entities.League;
 using Infrastructure.Database.Repositories;
+using Infrastructure.Timing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

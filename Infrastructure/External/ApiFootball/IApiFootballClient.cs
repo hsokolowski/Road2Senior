@@ -1,6 +1,6 @@
 ﻿using Contracts.ApiFootball;
 
-namespace Application.External;
+namespace Infrastructure.External.ApiFootball;
 
 public interface IApiFootballClient
 {

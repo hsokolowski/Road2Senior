@@ -1,5 +1,4 @@
-﻿using Application.External;
-using Azure.Identity;
+﻿using Azure.Identity;
 using Infrastructure.Database.Repositories;
 using Infrastructure.External.ApiFootball;
 using Microsoft.AspNetCore.Hosting;

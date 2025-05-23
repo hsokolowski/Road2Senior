@@ -1,5 +1,4 @@
-﻿using Application.Database;
-using Contracts;
+﻿using Contracts;
 using Contracts.League;
 using Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;

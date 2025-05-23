@@ -1,5 +1,4 @@
-﻿using Contracts.Cache;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 
 namespace Infrastructure.Cache
 {

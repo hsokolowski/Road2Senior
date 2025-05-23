@@ -1,7 +1,7 @@
 ﻿using Contracts.League;
 using Domain.Entities.League;
 
-namespace Application.Database;
+namespace Infrastructure.Database;
 
 public interface ILeagueRepository
 {
