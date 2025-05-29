@@ -108,11 +108,12 @@ app.MapGet("/weatherforecast", () =>
     .WithName("GetWeatherForecast")
     .WithOpenApi();
 
-app.MapGet("/", () => Results.Ok(new
+app.MapGet("/", (IConfiguration config) => Results.Ok(new
 {
     Message = "API działa poprawnie 🚀",
     StartedAt = DateTime.UtcNow,
     Environment = app.Environment.EnvironmentName,
+    Build = config["BUILD_VERSION"] ?? "LOCAL",
     Endpoints = new[]
     {
         "/swagger",
