@@ -70,7 +70,7 @@ namespace IntegrationTests
                     // Dodaj zamockowanego klienta HTTP, który używa MockServer
                     services.AddHttpClient<IApiFootballClient, ApiFootballClient>(client =>
                     {
-                        client.BaseAddress = new Uri(MockServer.Url + "/api/football/");
+                        client.BaseAddress = new Uri(MockServer.Url);
                     });
                 }
 

@@ -48,8 +48,7 @@ public class FullFlowWithMockResponseTests: IClassFixture<CustomWebApplicationFa
         };
 
         _factory.MockServer
-            .Given(Request.Create().WithPath("/api/football/leagues").UsingGet()
-                .WithParam("id", "1")) 
+            .Given(Request.Create().WithPath("/leagues").UsingGet().WithParam("id", "1")) 
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
@@ -61,7 +60,7 @@ public class FullFlowWithMockResponseTests: IClassFixture<CustomWebApplicationFa
     public async Task MockedApi_ShouldReturnExpectedResponse()
     {
         // Użycie zamockowanego API
-        var getUrl = "/api/football/leagues?id=1";
+        var getUrl = "/api/externalleague/leagues?id=1";
         var response = await _client.GetAsync(getUrl);
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();

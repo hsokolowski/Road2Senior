@@ -12,18 +12,4 @@ public static class ServiceCollectionExtensions
         return services;
     }
     
-    public static void RegisterServices(this IServiceCollection services, IConfiguration configuration)
-    {
-        // services.AddHttpClient<IApiFootballClient, ApiFootballClient>(client =>
-        // {
-        //     client.BaseAddress = new Uri(configuration.GetSection("Infrastructure")["ApiFootball:BaseUrl"]);
-        //     client.DefaultRequestHeaders.Add("X-RapidAPI-Key", configuration["ApiKey"]);
-        // });
-        //
-        // services.AddMemoryCache();
-        // services.AddScoped<ICacheService, CacheService>();
-        // services.AddScoped<ITimeService, TimeService>();
-        // services.AddScoped<ILeagueService, LeagueService>();
-        // services.AddScoped<IDatabaseService, DatabaseService.DatabaseService>();
-    }
 }

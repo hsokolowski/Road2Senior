@@ -67,7 +67,7 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment() && app.Environment.IsProduction())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -111,11 +111,15 @@ app.MapGet("/weatherforecast", () =>
 app.MapGet("/", () => Results.Ok(new
 {
     Message = "API działa poprawnie 🚀",
+    StartedAt = DateTime.UtcNow,
+    Environment = app.Environment.EnvironmentName,
     Endpoints = new[]
     {
         "/swagger",
         "/weatherforecast",
-        "/test-db"
+        "/test-db",
+        "/api/externalleague/leagues",
+        "/api/internalleague/league"
     }
 }));
 

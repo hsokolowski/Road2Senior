@@ -20,7 +20,7 @@ public static class ServiceCollectionExtensions
 
         services.AddHttpClient<IApiFootballClient, ApiFootballClient>(client =>
         {
-            client.BaseAddress = new Uri(configuration["ApiFootball:BaseUrl"]);
+            client.BaseAddress = new Uri(configuration["Infrastructure:ApiFootball:BaseUrl"]);
             client.DefaultRequestHeaders.Add("X-RapidAPI-Key", configuration["ApiKey"]);
         });
 

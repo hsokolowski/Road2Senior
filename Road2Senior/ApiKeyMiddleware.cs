@@ -18,6 +18,18 @@ public class ApiKeyMiddleware
 
     public async Task InvokeAsync(HttpContext context, IConfiguration configuration)
     {
+        // Wyjątki ze sprawdzania API Keya:
+        // - "/"     → Endpoint główny (np. health-check do sprawdzenia po deploymencie, że API działa)
+        // - "/swagger" → Dostęp do dokumentacji Swagger UI
+        // Jeśli żądanie pasuje do jednej z tych ścieżek, middleware je przepuszcza bez weryfikacji klucza
+        var path = context.Request.Path.Value;
+
+        if (path == "/" || path.StartsWith("/swagger"))
+        {
+            await _next(context);
+            return;
+        }
+        
         // Sprawdzenie, czy nagłówek z kluczem API jest obecny
         if (!context.Request.Headers.TryGetValue(APIKEYNAME, out var extractedApiKey))
         {

@@ -23,14 +23,17 @@ public class FullFlowTests : IClassFixture<CustomWebApplicationFactory<Program>>
     public async Task FullFlow_FromApiClientToGetFromDb()
     {
         // Krok 1: Pobierz ligę z API Football
-        var getUrl = "/api/football/leagues?id=1";
+        var getUrl = "/api/externalleague/leagues?id=1";
         var response = await _client.GetAsync(getUrl);
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
         var leagues =  JsonSerializer.Deserialize<IEnumerable<LeagueDto>>(content, new JsonSerializerOptions {AllowTrailingCommas = true, PropertyNameCaseInsensitive = true});
 
+        Assert.NotNull(leagues);
+        Assert.Contains(leagues, l => l.Name == "World Cup");
+        
         // Krok 2: Zapisz ligę do bazy danych
-        var saveUrl = "/api/database/league";
+        var saveUrl = "/api/internalleague/league";
         var saveContent = new StringContent( JsonSerializer.Serialize(leagues), Encoding.UTF8, "application/json");
         var saveResponse = await _client.PostAsync(saveUrl, saveContent);
         
@@ -43,7 +46,7 @@ public class FullFlowTests : IClassFixture<CustomWebApplicationFactory<Program>>
         saveResponse.EnsureSuccessStatusCode();
 
         // Krok 3: Odczytaj ligę z bazy danych
-        var getFromDbUrl = "/api/database/league/1";
+        var getFromDbUrl = "/api/internalleague/league/1";
         var getFromDbResponse = await _client.GetAsync(getFromDbUrl);
         getFromDbResponse.EnsureSuccessStatusCode();
         var dbContent = await getFromDbResponse.Content.ReadAsStringAsync();
