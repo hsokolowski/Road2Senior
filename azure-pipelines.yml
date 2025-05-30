@@ -111,8 +111,10 @@ steps:
     azureSubscription: 'Road2Senior-NewConnection2025'
     resourceGroupName: 'hus-dev' 
     appName: 'apifootball-web'
-    appSettings: |
-      BUILD_VERSION=$(Build.BuildNumber)
+    appSettings: >
+      {
+        "BUILD_VERSION": "$(Build.BuildNumber)"
+      }
   displayName: 'Set BUILD_VERSION in App Service'
 
 # Krok 10: Deployment do Azure App Service
