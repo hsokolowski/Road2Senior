@@ -105,6 +105,18 @@ steps:
     targetPath: '$(Pipeline.Workspace)/drop'
   displayName: 'Download artifacts'
 
+# Krok 9.7: Set BUILD_VERSION in App Settings
+- task: AzureAppServiceSettings@1
+  inputs:
+    azureSubscription: 'Road2Senior-NewConnection2025'
+    resourceGroupName: 'hus-dev' 
+    appName: 'apifootball-web'
+    appSettings: >
+      {
+        "BUILD_VERSION": "$(Build.BuildNumber)"
+      }
+  displayName: 'Set BUILD_VERSION in App Service'
+
 # Krok 10: Deployment do Azure App Service
 - task: AzureWebApp@1
   inputs:
