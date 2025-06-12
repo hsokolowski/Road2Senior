@@ -1,30 +1,35 @@
-# Pipeline do wdrażania aplikacji na Azure Web App
-# UWAGA: NIE uruchamia się automatycznie – tylko zewnętrznie przez trigger lub ręcznie
+# Pipeline do wdrożenia aplikacji z wcześniej zbudowanego artefaktu ZIP
 
-trigger:
-  branches:
-    exclude:
-      - '*'
-
-pr:
-  branches:
-    exclude:
-      - '*'
+trigger: none  # Ten pipeline uruchamiany jest ręcznie lub z innego pipeline
 
 pool:
   vmImage: 'windows-latest'
 
 steps:
-  # Pobranie artefaktu ZIP z builda
+  # Pobranie artefaktów ZIP z pipeline builda
   - task: DownloadPipelineArtifact@2
     inputs:
-      artifact: 'drop'
-      path: '$(Pipeline.Workspace)/drop'
+      artifactName: 'drop'
+      targetPath: '$(Pipeline.Workspace)/drop'
+    displayName: 'Download artifacts'
 
-  # Deployment do Azure Web App
+  # Ustawienie zmiennej BUILD_VERSION w App Settings Web Appa
+  - task: AzureAppServiceSettings@1
+    inputs:
+      azureSubscription: 'Road2Senior-NewConnection2025'
+      resourceGroupName: 'hus-dev'
+      appName: 'apifootball-web'
+      appSettings: >
+        {
+          "BUILD_VERSION": "$(Build.BuildNumber)"
+        }
+    displayName: 'Set BUILD_VERSION in App Service'
+
+  # Wdrożenie aplikacji do Azure Web App
   - task: AzureWebApp@1
     inputs:
       azureSubscription: 'Road2Senior-NewConnection2025'
       appType: 'webApp'
       appName: 'apifootball-web'
-      package: '$(Pipeline.Workspace)/drop/**/*.zip'
+      package: '$(Pipeline.Workspace)/drop/publish.zip'
+    displayName: 'Deploy to Azure Web App'
