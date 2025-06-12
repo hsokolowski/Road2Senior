@@ -1,0 +1,31 @@
+# Pipeline do uruchamiania Terraform i provisionowania infrastruktury
+
+trigger:
+  branches:
+    include:
+      - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  # Instalacja .NET (opcjonalnie, jeżeli np. budujesz coś lokalnie)
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '8.0.x'
+
+  # Uruchomienie Terraform
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: 'Road2Senior-NewConnection2025'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        cd terraform
+        terraform init -reconfigure \
+          -backend-config="resource_group_name=hus-dev" \
+          -backend-config="storage_account_name=tfstatehubert001" \
+          -backend-config="container_name=tfstate" \
+          -backend-config="key=terraform.tfstate"
+        terraform apply -auto-approve -var-file="secret.tfvars"
