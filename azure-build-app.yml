@@ -5,6 +5,11 @@ trigger:
       - master
       - feature/*  # buduje też feature branże
 
+pr:
+  branches:
+    include:
+      - master
+
 pool:
   vmImage: 'windows-latest'
 
