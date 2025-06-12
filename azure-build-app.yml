@@ -3,7 +3,7 @@ trigger:
   branches:
     include:
       - master
-      - feature/*  # buduje też feature branże
+      - feature/*  # buduje też feature branche
 
 pr:
   branches:
