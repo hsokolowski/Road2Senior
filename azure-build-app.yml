@@ -1,4 +1,5 @@
 # Pipeline do budowania aplikacji .NET 8, uruchamiania testów i publikacji artefaktów ZIP
+
 trigger:
   branches:
     include:
@@ -11,51 +12,73 @@ pr:
       - master
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'windows-latest'  # Używanie maszyny z Windows
 
 variables:
-  solution: '**/*.sln'
+  solution: '**/*.sln'  # Ścieżka do pliku .sln
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  AZURE_CLIENT_ID: $(azureClientId)
+  AZURE_CLIENT_SECRET: $(azureClientSecret)
+  AZURE_TENANT_ID: $(azureTenantId)
 
 steps:
-  # Instalacja .NET SDK
+  # Krok 1: Instalacja .NET SDK
   - task: UseDotNet@2
     inputs:
       packageType: 'sdk'
-      version: '8.0.x'
+      version: '8.0.203'
+      installationPath: $(Agent.ToolsDirectory)/dotnet
 
-  # Przywrócenie zależności
-  - task: DotNetCoreCLI@2
+  # Krok 2: Pobieranie sekretów z Azure Key Vault
+  - task: AzureKeyVault@2
     inputs:
-      command: 'restore'
-      projects: '**/*.csproj'
+      azureSubscription: 'Road2Senior-NewConnection2025'
+      KeyVaultName: 'ApiFootballKeyVolt'
+      SecretsFilter: '*'
+      RunAsPreJob: true
 
-  # Budowanie projektu
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'build'
-      projects: '**/*.csproj'
-      arguments: '--configuration $(buildConfiguration)'
+  # Krok 3: Restore dependencies
+  - script: |
+      dotnet restore
+    displayName: 'Restore dependencies'
 
-  # Testy jednostkowe
+  # Krok 4: Build
+  - script: |
+      dotnet build --configuration $(buildConfiguration)
+    displayName: 'Build project'
+
+  # Krok 5: Testy jednostkowe
   - task: DotNetCoreCLI@2
     inputs:
       command: 'test'
-      projects: '**/*Tests.csproj'
+      projects: '$(solution)'
       arguments: '--configuration $(buildConfiguration)'
+    displayName: 'Run tests'
+    env:
+      AZURE_CLIENT_ID: $(azureClientId)
+      AZURE_CLIENT_SECRET: $(azureClientSecret)
+      AZURE_TENANT_ID: $(azureTenantId)
 
-  # Publikacja projektu jako ZIP
-  - task: DotNetCoreCLI@2
+  # Krok 6: Publikacja projektu
+  - script: |
+      dotnet publish "$(Build.SourcesDirectory)/Road2Senior/Road2Senior.csproj" --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish
+    displayName: 'Publish app'
+
+  # Krok 7: Zip publikacji
+  - task: ArchiveFiles@2
     inputs:
-      command: 'publish'
-      publishWebProjects: true
-      arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
-      zipAfterPublish: true
+      rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/publish'
+      includeRootFolder: false
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/publish.zip'
+      replaceExistingArchive: true
+    displayName: 'Zip published files'
 
-  # Publikacja artefaktu ZIP
+  # Krok 8: Publikacja artefaktów
   - task: PublishBuildArtifacts@1
     inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/publish.zip'
       ArtifactName: 'drop'
       publishLocation: 'Container'
+    displayName: 'Publish artifacts'
