@@ -7,11 +7,21 @@ pool:
 
 steps:
   # Pobranie artefaktów ZIP z pipeline builda
+  #- task: DownloadPipelineArtifact@2
+    #inputs:
+      #artifactName: 'drop'
+      #targetPath: '$(Pipeline.Workspace)/drop'
+    #displayName: 'Download artifacts'
+
+    # Krok 1: Pobranie artefaktów ZIP z OSTATNIEGO udanego uruchomienia build pipeline
   - task: DownloadPipelineArtifact@2
     inputs:
+      buildType: 'current'
+      project: 'hus'  # <- Nazwa twojego projektu DevOps
+      pipeline: 'azure-build-app'  # <- Nazwa build pipeline (musi się zgadzać!)
       artifactName: 'drop'
       targetPath: '$(Pipeline.Workspace)/drop'
-    displayName: 'Download artifacts'
+    displayName: 'Download latest artifacts from azure-build-app'
 
   # Ustawienie zmiennej BUILD_VERSION w App Settings Web Appa
   - task: AzureAppServiceSettings@1
