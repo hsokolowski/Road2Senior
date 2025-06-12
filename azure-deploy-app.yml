@@ -1,0 +1,30 @@
+# Pipeline do wdrażania aplikacji na Azure Web App
+# UWAGA: NIE uruchamia się automatycznie – tylko zewnętrznie przez trigger lub ręcznie
+
+trigger:
+  branches:
+    exclude:
+      - '*'
+
+pr:
+  branches:
+    exclude:
+      - '*'
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+  # Pobranie artefaktu ZIP z builda
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifact: 'drop'
+      path: '$(Pipeline.Workspace)/drop'
+
+  # Deployment do Azure Web App
+  - task: AzureWebApp@1
+    inputs:
+      azureSubscription: 'Road2Senior-NewConnection2025'
+      appType: 'webApp'
+      appName: 'apifootball-web'
+      package: '$(Pipeline.Workspace)/drop/**/*.zip'
