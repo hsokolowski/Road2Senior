@@ -16,9 +16,10 @@ steps:
     # Krok 1: Pobranie artefaktów ZIP z OSTATNIEGO udanego uruchomienia build pipeline
   - task: DownloadPipelineArtifact@2
     inputs:
-      buildType: 'current'
+      buildType: 'specific'
       project: 'hus'  # <- Nazwa twojego projektu DevOps
       pipeline: 'azure-build-app'  # <- Nazwa build pipeline (musi się zgadzać!)
+      buildVersionToDownload: 'latest'
       artifactName: 'drop'
       targetPath: '$(Pipeline.Workspace)/drop'
     displayName: 'Download latest artifacts from azure-build-app'
