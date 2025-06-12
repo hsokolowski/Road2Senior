@@ -1,11 +1,12 @@
 ﻿using Azure.Identity;
+using Infrastructure.Database.Repositories;
+using Infrastructure.External.ApiFootball;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Services.EndpointClients;
 using WireMock.Server;
 
 namespace IntegrationTests
@@ -69,7 +70,7 @@ namespace IntegrationTests
                     // Dodaj zamockowanego klienta HTTP, który używa MockServer
                     services.AddHttpClient<IApiFootballClient, ApiFootballClient>(client =>
                     {
-                        client.BaseAddress = new Uri(MockServer.Url + "/api/football/");
+                        client.BaseAddress = new Uri(MockServer.Url);
                     });
                 }
 

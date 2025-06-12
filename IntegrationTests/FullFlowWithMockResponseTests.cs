@@ -1,7 +1,9 @@
 ﻿using System.Text.Json;
 using Contracts;
-using Domain.Football.Responses;
+using Contracts.ApiFootball;
+using Contracts.League;
 using Microsoft.AspNetCore.Hosting;
+using Road2Senior;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 
@@ -46,8 +48,7 @@ public class FullFlowWithMockResponseTests: IClassFixture<CustomWebApplicationFa
         };
 
         _factory.MockServer
-            .Given(Request.Create().WithPath("/api/football/leagues").UsingGet()
-                .WithParam("id", "1")) 
+            .Given(Request.Create().WithPath("/leagues").UsingGet().WithParam("id", "1")) 
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
@@ -59,13 +60,13 @@ public class FullFlowWithMockResponseTests: IClassFixture<CustomWebApplicationFa
     public async Task MockedApi_ShouldReturnExpectedResponse()
     {
         // Użycie zamockowanego API
-        var getUrl = "/api/football/leagues?id=1";
+        var getUrl = "/api/externalleague/leagues?id=1";
         var response = await _client.GetAsync(getUrl);
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
 
         // Deserializacja odpowiedzi
-        var leagues =  JsonSerializer.Deserialize<IEnumerable<LeagueModel>>(content, new JsonSerializerOptions {AllowTrailingCommas = true, PropertyNameCaseInsensitive = true});
+        var leagues =  JsonSerializer.Deserialize<IEnumerable<LeagueDto>>(content, new JsonSerializerOptions {AllowTrailingCommas = true, PropertyNameCaseInsensitive = true});
         
         // Sprawdzenie, czy odpowiedź jest zgodna z oczekiwaniami
         Assert.NotNull(leagues);
