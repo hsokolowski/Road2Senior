@@ -12,15 +12,24 @@ variables:
   - group: infra-secrets  # <-- Twoja grupa zmiennych
 
 steps:
-  # Instalacja .NET (opcjonalnie, jeżeli np. budujesz coś lokalnie)
   - task: UseDotNet@2
+    displayName: "Install .NET SDK"
     inputs:
       packageType: 'sdk'
       version: '8.0.x'
 
-  # Uruchomienie Terraform
+  - task: Bash@3
+    displayName: "Install Terraform"
+    inputs:
+      targetType: inline
+      script: |
+        curl -o terraform.zip https://releases.hashicorp.com/terraform/1.8.2/terraform_1.8.2_linux_amd64.zip
+        unzip terraform.zip
+        sudo mv terraform /usr/local/bin/
+        terraform -version
+
   - task: AzureCLI@2
-    displayName: 'Run Terraform Init & Apply'
+    displayName: "Run Terraform Init & Apply"
     inputs:
       azureSubscription: 'Road2Senior-NewConnection2025'
       scriptType: 'bash'
