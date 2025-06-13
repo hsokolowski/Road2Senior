@@ -1,7 +1,7 @@
 ﻿variable "resource_group_name" {
   description = "Nazwa resource group dla całego projektu"
   type        = string
-  default     = "hus-dev"
+  default     = "hus-dev2"
 }
 
 variable "location" {
@@ -23,6 +23,19 @@ variable "sql_admin_password" {
 
 variable "tenant_id" {
   description = "Azure Active Directory Tenant ID"
+  type        = string
+  sensitive   = true
+}
+
+variable "azure_devops_pat" {
+  description = "Personal Access Token for Azure DevOps (eg. pipelines)"
+  type        = string
+  sensitive   = true
+}
+
+variable "github_service_connection_id" {}
+variable "github_pat" {
+  description = "GitHub Personal Access Token"
   type        = string
   sensitive   = true
 }

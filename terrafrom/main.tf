@@ -4,12 +4,37 @@
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
+
+    azuredevops = {
+      source  = "microsoft/azuredevops"
+      version = "~> 1.0"
+    }
   }
+}
+
+provider "azuredevops" {
+  org_service_url       = "https://dev.azure.com/hus-dev"
+  personal_access_token = var.azure_devops_pat
 }
 
 # Konfiguracja dostawcy Azure
 provider "azurerm" {
   features {}
+}
+
+# 1. Projekt DevOps (jeśli chcesz zarządzać nim przez TF) (konto hus nie ma uprawnien)
+# resource "azuredevops_project" "project" {
+#   name               = "hus"
+#   description        = "Projekt do nauki Road2Senior"
+#   visibility         = "private"
+#   version_control    = "Git"
+#   work_item_template = "Agile"
+# }
+
+# 2. Połączenie z GitHub (jako service endpoint)
+data "azuredevops_serviceendpoint_github" "github" {
+  project_id = data.azuredevops_project.project.id
+  service_endpoint_name = "GitHubConnection"
 }
 
 # Resource group
@@ -26,6 +51,7 @@ resource "azurerm_service_plan" "app_service_plan" {
   sku_name            = "F1"                     # Free Tier z portala rowniez - wejsc do app-web i tam na dole po prawej stronie bedzie
 }
 
+#Web app
 resource "azurerm_windows_web_app" "web_app" {
   name                = "apifootball-web"
   location            = azurerm_service_plan.app_service_plan.location
@@ -134,4 +160,15 @@ resource "azurerm_mssql_server" "sql_server" {
   version                      = "12.0"
   administrator_login          = var.sql_admin_login
   administrator_login_password = var.sql_admin_password
+}
+
+# SQL Database 
+resource "azurerm_mssql_database" "main_db" {
+  name                 = "apifootballdb"
+  server_id            = azurerm_mssql_server.sql_server.id
+  sku_name             = "Basic"
+  max_size_gb          = 2
+  collation            = "SQL_Latin1_General_CP1_CI_AS"
+  zone_redundant       = false
+  storage_account_type = "Local"
 }
