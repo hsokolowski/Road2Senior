@@ -9,41 +9,45 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: infra-secrets  # <-- Twoja grupa zmiennych
+  - group: infra-secrets  # Grupa zmiennych zawierająca m.in. PATy i hasła
 
 steps:
   - task: UseDotNet@2
-    displayName: "Install .NET SDK"
+    displayName: 'Install .NET SDK'
     inputs:
       packageType: 'sdk'
       version: '8.0.x'
 
-  - task: Bash@3
-    displayName: "Install Terraform"
-    inputs:
-      targetType: inline
-      script: |
-        curl -o terraform.zip https://releases.hashicorp.com/terraform/1.8.2/terraform_1.8.2_linux_amd64.zip
-        unzip terraform.zip
-        sudo mv terraform /usr/local/bin/
-        terraform -version
-
   - task: AzureCLI@2
-    displayName: "Run Terraform Init & Apply"
+    displayName: 'Run Terraform Init & Apply'
     inputs:
       azureSubscription: 'Road2Senior-NewConnection2025'
       scriptType: 'bash'
       scriptLocation: 'inlineScript'
       inlineScript: |
         cd $(System.DefaultWorkingDirectory)/terrafrom
+
+        echo "##[section]🔐 Exporting SPN credentials to env vars"
+        export ARM_CLIENT_ID=$servicePrincipalId
+        export ARM_CLIENT_SECRET=$servicePrincipalKey
+        export ARM_TENANT_ID=$(tenant_id)
+        export ARM_SUBSCRIPTION_ID=$(subscription_id)
+
+        echo "##[section]🚀 Initializing Terraform"
         terraform init -reconfigure \
           -backend-config="resource_group_name=hus-dev" \
           -backend-config="storage_account_name=tfstatehubert001" \
           -backend-config="container_name=tfstate" \
           -backend-config="key=terraform.tfstate"
+
+        echo "##[section]✅ Applying Terraform"
         terraform apply -auto-approve \
           -var="sql_admin_login=$(sql_admin_login)" \
           -var="sql_admin_password=$(sql_admin_password)" \
           -var="tenant_id=$(tenant_id)" \
           -var="azure_devops_pat=$(azure_devops_pat)" \
           -var="github_pat=$(github_pat)"
+    env:
+      servicePrincipalId: $(servicePrincipalId)
+      servicePrincipalKey: $(servicePrincipalKey)
+      subscription_id: $(subscription_id)
