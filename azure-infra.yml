@@ -20,14 +20,12 @@ steps:
 
   # Uruchomienie Terraform
   - task: AzureCLI@2
+    displayName: 'Run Terraform Init & Apply'
     inputs:
       azureSubscription: 'Road2Senior-NewConnection2025'
       scriptType: 'bash'
       scriptLocation: 'inlineScript'
       inlineScript: |
-        curl -sL https://releases.hashicorp.com/terraform/1.8.2/terraform_1.8.2_linux_amd64.zip -o terraform.zip
-        unzip terraform.zip && sudo mv terraform /usr/local/bin/
-        terraform -version
         cd terraform
         terraform init -reconfigure \
           -backend-config="resource_group_name=hus-dev" \
