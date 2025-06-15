@@ -54,7 +54,7 @@ steps:
 
         echo "##[section]✅ Applying Terraform"
         terraform apply -auto-approve \
-          -var="github_service_connection_id=$(github_service_connection_id)"
+          -var="github_service_connection_id=$(github_service_connection_id)" \
           -var="sql_admin_login=$(sql_admin_login)" \
           -var="sql_admin_password=$(sql_admin_password)" \
           -var="tenant_id=$(tenant_id)" \
