@@ -18,6 +18,13 @@ steps:
       packageType: 'sdk'
       version: '8.0.x'
 
+  - script: |
+      echo "Installing Terraform 1.5.7"
+      curl -s -o terraform.zip https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip
+      unzip terraform.zip
+      sudo mv terraform /usr/local/bin/
+    displayName: 'Manual Install Terraform 1.5.7'
+
   - task: AzureCLI@2
     displayName: 'Run Terraform Init & Apply'
     inputs:
