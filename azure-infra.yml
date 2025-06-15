@@ -18,6 +18,11 @@ steps:
       packageType: 'sdk'
       version: '8.0.x'
 
+  #- task: TerraformInstaller@1
+  #  displayName: 'Install Terraform'
+  #  inputs:
+  #    terraformVersion: '1.5.7'
+
   - script: |
       echo "Installing Terraform 1.5.7"
       curl -s -o terraform.zip https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip
