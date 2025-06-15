@@ -33,7 +33,11 @@ variable "azure_devops_pat" {
   sensitive   = true
 }
 
-variable "github_service_connection_id" {}
+variable "github_service_connection_id" {
+  description = "ID connection GitHub in Azure DevOps"
+  type        = string
+  sensitive   = true
+}
 variable "github_pat" {
   description = "GitHub Personal Access Token"
   type        = string
