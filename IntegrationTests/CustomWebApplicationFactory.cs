@@ -28,7 +28,7 @@ namespace IntegrationTests
             // Konfiguracja configu z pliku appsettings.json i KV
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json") // Wczytaj plik appsettings.json
-                .AddAzureKeyVault(new Uri("https://apifootballkeyvolt.vault.azure.net/"), new DefaultAzureCredential()) // Wczytaj KV 
+                .AddAzureKeyVault(new Uri("https://apifootballkv.vault.azure.net/"), new DefaultAzureCredential()) // Wczytaj KV 
                 .Build();
             
             // Pobierz wartość klucza API z konfiguracji
