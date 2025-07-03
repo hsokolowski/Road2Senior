@@ -2,6 +2,7 @@ using Application;
 using Azure.Identity;
 using Infrastructure;
 using Infrastructure.Database.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Road2Senior;
 
@@ -79,12 +80,22 @@ app.MapGet("/test-db", async (FootballContext db) =>
 {
     try
     {
-        await db.Database.CanConnectAsync();
-        return Results.Ok("Database connection successful!");
+        var canConnect = await db.Database.CanConnectAsync();
+
+        return Results.Ok(new
+        {
+            success = canConnect,
+            server = db.Database.GetDbConnection().DataSource,
+            database = db.Database.GetDbConnection().Database,
+            user = Environment.UserName,
+            provider = db.Database.ProviderName,
+            connectionStringPreview = db.Database.GetDbConnection().ConnectionString,
+            dbType = builder.Configuration["DatabaseType"]
+        });
     }
     catch (Exception ex)
     {
-        return Results.Problem(ex.Message);
+        return Results.Problem(detail: ex.ToString());
     }
 });
 

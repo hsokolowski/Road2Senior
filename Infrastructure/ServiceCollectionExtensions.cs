@@ -40,10 +40,17 @@ public static class ServiceCollectionExtensions
 
         switch (dbType)
         {
-            case "AzureSql":
+            case "AzureLocal":
                 var azureConnection = configuration.GetConnectionString("AzureSql");
                 services.AddDbContext<FootballContext>(options =>
                     options.UseSqlServer(azureConnection));
+                break;
+            
+            case "AzureKv":
+                var azureConnectionKv = configuration["AzureSql"];
+                Console.WriteLine(azureConnectionKv);
+                services.AddDbContext<FootballContext>(options =>
+                    options.UseSqlServer(azureConnectionKv));
                 break;
 
             case "SqlServer":

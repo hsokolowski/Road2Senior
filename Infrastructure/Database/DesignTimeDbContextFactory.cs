@@ -15,9 +15,17 @@ namespace Infrastructure.Database
                 .AddJsonFile("appsettings.json")
                 .Build();
 
+            var databaseType = configuration["DatabaseType"];
+            string connectionName = databaseType switch
+            {
+                "AzureKv" => "AzureConnection",
+                "SqlServer" => "SqlServerConnection",
+                _ => throw new Exception($"Unknown DatabaseType: {databaseType}")
+            };
+            
             var optionsBuilder = new DbContextOptionsBuilder<FootballContext>();
-            var connectionString = configuration.GetConnectionString("SqlServerConnection");
-
+            var connectionString = configuration.GetConnectionString(connectionName);
+            
             optionsBuilder.UseSqlServer(connectionString);
 
             return new FootballContext(optionsBuilder.Options);
