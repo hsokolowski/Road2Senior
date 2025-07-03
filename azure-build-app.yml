@@ -34,7 +34,7 @@ steps:
   - task: AzureKeyVault@2
     inputs:
       azureSubscription: 'Road2Senior-NewConnection2025'
-      KeyVaultName: 'ApiFootballKeyVolt'
+      KeyVaultName: 'apifootballkv'
       SecretsFilter: '*'
       RunAsPreJob: true
 
