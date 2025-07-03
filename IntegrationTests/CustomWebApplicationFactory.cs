@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using Azure.Identity;
+﻿using Azure.Identity;
 using Infrastructure.Database.Repositories;
 using Infrastructure.External.ApiFootball;
 using Microsoft.AspNetCore.Hosting;
@@ -26,21 +25,10 @@ namespace IntegrationTests
         // Konstruktor fabryki, który wczytuje klucz API z appsettings.json
         public CustomWebApplicationFactory()
         {
-            TokenCredential credential;
-
-            if (Environment.GetEnvironmentVariable("AZURE_CLIENT_ID") != null)
-            {
-                credential = new EnvironmentCredential();
-            }
-            else
-            {
-                credential = new DefaultAzureCredential();
-            }
-            
             // Konfiguracja configu z pliku appsettings.json i KV
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json") // Wczytaj plik appsettings.json
-                .AddAzureKeyVault(new Uri("https://apifootballkv.vault.azure.net/"), credential) // Wczytaj KV 
+                .AddAzureKeyVault(new Uri("https://apifootballkv.vault.azure.net/"), new DefaultAzureCredential()) // Wczytaj KV 
                 .Build();
             
             // Pobierz wartość klucza API z konfiguracji
