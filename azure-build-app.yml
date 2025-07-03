@@ -18,9 +18,9 @@ variables:
   solution: '**/*.sln'  # Ścieżka do pliku .sln
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-  AZURE_CLIENT_ID: $(servicePrincipalId)
-  AZURE_CLIENT_SECRET: $(servicePrincipalKey)
-  AZURE_TENANT_ID: $(tenant_id)
+  AZURE_CLIENT_ID: $(azureClientId)
+  AZURE_CLIENT_SECRET: $(azureClientSecret)
+  AZURE_TENANT_ID: $(azureTenantId)
 
 steps:
   # Krok 1: Instalacja .NET SDK
@@ -56,9 +56,9 @@ steps:
       arguments: '--configuration $(buildConfiguration)'
     displayName: 'Run tests'
     env:
-      AZURE_CLIENT_ID: $(servicePrincipalId)
-      AZURE_CLIENT_SECRET: $(servicePrincipalKey)
-      AZURE_TENANT_ID: $(tenant_id)
+      AZURE_CLIENT_ID: $(azureClientId)
+      AZURE_CLIENT_SECRET: $(azureClientSecret)
+      AZURE_TENANT_ID: $(azureTenantId)
 
   # Krok 6: Publikacja projektu
   - script: |
