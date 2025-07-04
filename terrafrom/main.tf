@@ -144,7 +144,7 @@ resource "azurerm_windows_web_app" "web_app" {
 # retention_in_mb: Maksymalny rozmiar przechowywanych logów (w MB)
 
 resource "azurerm_key_vault" "keyvault" {
-  name                      = "ApiFootballKeyVolt"
+  name                      = "apifootballkv"
   location                  = "polandcentral"
   resource_group_name       = azurerm_resource_group.rg.name
   tenant_id                 = var.tenant_id # to CIklum

@@ -1,7 +1,7 @@
 ﻿variable "resource_group_name" {
   description = "Nazwa resource group dla całego projektu"
   type        = string
-  default     = "hus-dev2"
+  default     = "hus-dev"
 }
 
 variable "location" {
@@ -40,6 +40,18 @@ variable "github_service_connection_id" {
 }
 variable "github_pat" {
   description = "GitHub Personal Access Token"
+  type        = string
+  sensitive   = true
+}
+
+variable "api_key" {
+  description = "API Key to external service(api)"
+  type        = string
+  sensitive   = true
+}
+
+variable "azure_sql_connection_string" {
+  description = "Connection string to Azure SQL from Key Vault"
   type        = string
   sensitive   = true
 }
