@@ -23,6 +23,17 @@ variables:
   AZURE_TENANT_ID: $(azureTenantId)
 
 steps:
+  - script: |
+      echo "AZURE_CLIENT_ID: %AZURE_CLIENT_ID%"
+      echo "AZURE_CLIENT_SECRET: %AZURE_CLIENT_SECRET%"
+      echo "AZURE_TENANT_ID: %AZURE_TENANT_ID%"
+      echo "$(azureClientId) | $(azureClientSecret) | $(azureTenantId)"
+    displayName: "Debug env"
+    env:
+      AZURE_CLIENT_ID: $(AZURE_CLIENT_ID)
+      AZURE_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
+      AZURE_TENANT_ID: $(AZURE_TENANT_ID)
+
   # Krok 1: Instalacja .NET SDK
   - task: UseDotNet@2
     inputs:
@@ -47,17 +58,6 @@ steps:
   - script: |
       dotnet build --configuration $(buildConfiguration)
     displayName: 'Build project'
-
-  - script: |
-      echo "AZURE_CLIENT_ID: %AZURE_CLIENT_ID%"
-      echo "AZURE_CLIENT_SECRET: %AZURE_CLIENT_SECRET%"
-      echo "AZURE_TENANT_ID: %AZURE_TENANT_ID%"
-      echo "$(azureClientId) | $(azureClientSecret) | $(azureTenantId)"
-    displayName: "Debug env"
-    env:
-      AZURE_CLIENT_ID: $(AZURE_CLIENT_ID)
-      AZURE_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
-      AZURE_TENANT_ID: $(AZURE_TENANT_ID)
 
   # Krok 5: Testy jednostkowe
   - task: DotNetCoreCLI@2
