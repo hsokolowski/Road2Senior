@@ -41,10 +41,10 @@ variables:
 
 steps:
   - script: |
-      echo "AZURE_CLIENT_ID: %AZURE_CLIENT_ID%"
-      echo "AZURE_CLIENT_SECRET: %AZURE_CLIENT_SECRET%"
-      echo "AZURE_TENANT_ID: %AZURE_TENANT_ID%"
-      echo "$(azureClientId) | $(azureClientSecret) | $(azureTenantId)"
+      if ($env:AZURE_CLIENT_ID)     { Write-Host "AZURE_CLIENT_ID: $($env:AZURE_CLIENT_ID.Substring(0,4))***" } else { Write-Host "AZURE_CLIENT_ID: MISSING" }
+      if ($env:AZURE_TENANT_ID)     { Write-Host "AZURE_TENANT_ID: $($env:AZURE_TENANT_ID)" }
+      if ($env:AZURE_SUBSCRIPTION_ID){ Write-Host "AZURE_SUBSCRIPTION_ID: $($env:AZURE_SUBSCRIPTION_ID)" }
+      if ($env:AZURE_CLIENT_SECRET) { Write-Host "AZURE_CLIENT_SECRET set: $([bool]$env:AZURE_CLIENT_SECRET)" } else { Write-Host "AZURE_CLIENT_SECRET: MISSING" }
     displayName: "Debug env"
     env:
       AZURE_CLIENT_ID: $(AZURE_CLIENT_ID)
