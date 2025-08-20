@@ -34,7 +34,7 @@ provider "azurerm" {
 # 2. Połączenie z GitHub (jako service endpoint)
 data "azuredevops_serviceendpoint_github" "github" {
   project_id = data.azuredevops_project.project.id
-  service_endpoint_name = "GitHubConnection"
+  service_endpoint_name = "hsokolowski"
 }
 
 # Resource group

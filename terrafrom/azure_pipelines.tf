@@ -18,9 +18,6 @@ resource "azuredevops_build_definition" "build_app" {
   ci_trigger {
     use_yaml = true
   }
-  pull_request_trigger {
-    use_yaml = true
-  }
 }
 
 resource "azuredevops_build_definition" "deploy_app" {
