@@ -15,13 +15,29 @@ pool:
   vmImage: 'windows-latest'  # Używanie maszyny z Windows
 
 variables:
-  solution: '**/*.sln'  # Ścieżka do pliku .sln
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
-  AZURE_CLIENT_ID: $(servicePrincipalId)
-  AZURE_CLIENT_SECRET: $(servicePrincipalKey)
-  AZURE_TENANT_ID: $(tenant_id)
-  group: infra-secrets   # <--- nazwa Twojej grupy Pipelines/Library
+  #solution: '**/*.sln'  # Ścieżka do pliku .sln
+  #buildPlatform: 'Any CPU'
+  #buildConfiguration: 'Release'
+  #AZURE_CLIENT_ID: $(servicePrincipalId)
+  #AZURE_CLIENT_SECRET: $(servicePrincipalKey)
+  #AZURE_TENANT_ID: $(tenant_id)
+  - group: infra-secrets            # >>> podpięcie Variable Group
+  - name: solution
+    value: '**/*.sln'
+  - name: buildPlatform
+    value: 'Any CPU'
+  - name: buildConfiguration
+    value: 'Release'
+
+  # mapowanie na Twoje stare nazwy (żeby reszta pliku została bez zmian)
+  - name: AZURE_CLIENT_ID
+    value: $(servicePrincipalId)
+  - name: AZURE_CLIENT_SECRET
+    value: $(servicePrincipalKey)
+  - name: AZURE_TENANT_ID
+    value: $(tenant_id)
+  - name: AZURE_SUBSCRIPTION_ID
+    value: $(subscription_id)
 
 steps:
   - script: |
