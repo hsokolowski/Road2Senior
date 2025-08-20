@@ -14,6 +14,13 @@ resource "azuredevops_build_definition" "build_app" {
     branch_name           = "master"
     service_connection_id = data.azuredevops_serviceendpoint_github.github.id # Service connection brany z DevOps Azure/Settings
   }
+
+  ci_trigger {
+    use_yaml = true
+  }
+  pull_request_trigger {
+    use_yaml = true
+  }
 }
 
 resource "azuredevops_build_definition" "deploy_app" {
