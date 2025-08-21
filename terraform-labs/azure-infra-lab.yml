@@ -17,6 +17,16 @@ parameters:
     type: string
     default: 'apply'
     values: [apply, destroy]
+    
+  - name: backend_rg
+    type: string
+    default: 'r2s-lab-tfstate-rg'
+  - name: backend_sa
+    type: string
+    default: 'r2slabtfstate001'   # musi być unikalne globalnie
+  - name: backend_container
+    type: string
+    default: 'tfstate'
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -30,7 +40,46 @@ steps:
       unzip terraform.zip
       sudo mv terraform /usr/local/bin/
     displayName: 'Manual Install Terraform 1.5.7'
-
+    
+  # Bootstrap backend: RG + Storage + Container + RBAC dla SPN
+  - task: AzureCLI@2
+    displayName: 'Bootstrap LAB backend (RG/SA/container/RBAC)'
+    inputs:
+      azureSubscription: 'Road2Senior-NewConnection2025'
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -euo pipefail
+        
+        echo ">>> Ensure backend RG"
+        az group create -n '${{ parameters.backend_rg }}' -l 'westeurope' 1>/dev/null
+        
+        echo ">>> Ensure storage account"
+        if ! az storage account show -g '${{ parameters.backend_rg }}' -n '${{ parameters.backend_sa }}' 1>/dev/null 2>&1; then
+          az storage account create \
+            -g '${{ parameters.backend_rg }}' \
+            -n '${{ parameters.backend_sa }}' \
+            -l 'westeurope' \
+            --sku Standard_LRS \
+            --kind StorageV2 \
+            --allow-blob-public-access false \
+            --min-tls-version TLS1_2
+        fi
+        
+        echo ">>> Ensure container '${{ parameters.backend_container }}'"
+        az storage container create \
+          --name '${{ parameters.backend_container }}' \
+          --account-name '${{ parameters.backend_sa }}' \
+          --auth-mode login 1>/dev/null
+        
+        echo ">>> Ensure RBAC: Storage Blob Data Contributor for SPN"
+        SA_ID=$(az storage account show -g '${{ parameters.backend_rg }}' -n '${{ parameters.backend_sa }}' --query id -o tsv)
+        az role assignment create \
+          --role "Storage Blob Data Contributor" \
+          --assignee-object-id "$(servicePrincipalId)" \
+          --assignee-principal-type ServicePrincipal \
+          --scope "${SA_ID}" 1>/dev/null || true
+          
   - task: AzureCLI@2
     displayName: 'Terraform ${{ parameters.action }} (terraform-labs)'
     inputs:
