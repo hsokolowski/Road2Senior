@@ -1,0 +1,64 @@
+﻿trigger: none
+
+variables:
+  - group: infra-secrets  # ARM_* z Variable Group
+
+parameters:
+  - name: env_prefix
+    displayName: 'Prefix środowiska (lab1, lab2, …)'
+    type: string
+    default: 'lab1'
+  - name: location
+    displayName: 'Region'
+    type: string
+    default: 'polandcentral'
+  - name: action
+    displayName: 'Akcja'
+    type: string
+    default: 'apply'
+    values: [apply, destroy]
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - checkout: self
+
+  - task: AzureCLI@2
+    displayName: 'Terraform ${{ parameters.action }} (terraform-labs)'
+    inputs:
+      azureSubscription: 'Road2Senior-NewConnection2025'
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -euo pipefail
+        cd "$(Build.SourcesDirectory)/terraform-labs"
+
+        echo ">> terraform init (remote state per lab)"
+        terraform init \
+          -backend-config="resource_group_name=hus-dev-lab" \
+          -backend-config="storage_account_name=tfstatehubertlab001" \
+          -backend-config="container_name=tfstate" \
+          -backend-config="key=labs/${{ parameters.env_prefix }}.tfstate"
+
+        if [ "${{ parameters.action }}" = "apply" ]; then
+          terraform plan \
+            -var-file="$(Build.SourcesDirectory)/secret.tfvars" \
+            -var="env_prefix=${{ parameters.env_prefix }}" \
+            -var="location=${{ parameters.location }}"
+
+          terraform apply -auto-approve \
+            -var-file="$(Build.SourcesDirectory)/secret.tfvars" \
+            -var="env_prefix=${{ parameters.env_prefix }}" \
+            -var="location=${{ parameters.location }}"
+        else
+          terraform destroy -auto-approve \
+            -var-file="$(Build.SourcesDirectory)/secret.tfvars" \
+            -var="env_prefix=${{ parameters.env_prefix }}" \
+            -var="location=${{ parameters.location }}"
+        fi
+    env:
+      ARM_CLIENT_ID: $(servicePrincipalId)
+      ARM_CLIENT_SECRET: $(servicePrincipalKey)
+      ARM_TENANT_ID: $(tenant_id)
+      ARM_SUBSCRIPTION_ID: $(subscription_id)
