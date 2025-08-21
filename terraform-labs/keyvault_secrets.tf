@@ -21,3 +21,9 @@ resource "azurerm_key_vault_secret" "sql_admin_login" {
   value        = var.sql_admin_login
   key_vault_id = azurerm_key_vault.keyvault.id
 }
+
+resource "azurerm_role_assignment" "webapp_kv_reader" {
+  scope                = azurerm_key_vault.keyvault.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_windows_web_app.web_app.identity[0].principal_id
+}
