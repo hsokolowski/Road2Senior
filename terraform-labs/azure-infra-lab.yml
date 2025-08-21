@@ -99,8 +99,19 @@ steps:
       ARM_TENANT_ID: $(tenant_id)
       ARM_SUBSCRIPTION_ID: $(subscription_id)
 
+      # Terraform TF_VAR mapping
       TF_VAR_env_prefix: ${{ parameters.env_prefix }}
       TF_VAR_location: ${{ parameters.location }}
+
+      # wymagane z variables.tf
+      TF_VAR_tenant_id: $(tenant_id)
+      TF_VAR_azure_devops_pat: $(azure_devops_pat)
+      TF_VAR_github_service_connection_id: $(github_service_connection_id)
+      TF_VAR_github_pat: $(github_pat)
+      TF_VAR_api_key: $(api_key)
+      TF_VAR_azure_sql_connection_string: $(azure_sql_connection_string)
+
+      # SQL creds
       TF_VAR_sql_admin_login: $(sql_admin_login)
       TF_VAR_sql_admin_password: $(sql_admin_password)
 
