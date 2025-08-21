@@ -1,11 +1,11 @@
 trigger: none
 
 variables:
-  - group: infra-secrets   # azure_devops_pat, github_*, servicePrincipalId, servicePrincipalKey, subscription_id, tenant_id, sql_admin_login, sql_admin_password
+  - group: infra-secrets   # musi zawierać: servicePrincipalId, servicePrincipalKey, subscription_id, tenant_id, sql_admin_login, sql_admin_password, tfstate_access_key
 
 parameters:
   - name: env_prefix
-    displayName: 'Prefix środowiska (lab1, lab2, …)'
+    displayName: 'Prefix środowiska'
     type: string
     default: 'lab1'
   - name: location
@@ -17,16 +17,20 @@ parameters:
     type: string
     default: 'apply'
     values: [apply, destroy]
-    
+
+  # Backend (używamy istniejącego RG/SA/Container proda, ale innego PLIKU stanu)
   - name: backend_rg
     type: string
-    default: 'r2s-lab-tfstate-rg'
+    default: 'hus-dev'
   - name: backend_sa
     type: string
-    default: 'r2slabtfstate001'   # musi być unikalne globalnie
+    default: 'tfstatehubert001'
   - name: backend_container
     type: string
     default: 'tfstate'
+  - name: backend_key
+    type: string
+    default: 'labs/${{ parameters.env_prefix }}.tfstate'  # osobny plik stanu per lab
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -40,48 +44,10 @@ steps:
       unzip terraform.zip
       sudo mv terraform /usr/local/bin/
     displayName: 'Manual Install Terraform 1.5.7'
-    
+
   # Bootstrap backend: RG + Storage + Container + RBAC dla SPN
   - task: AzureCLI@2
-    displayName: 'Bootstrap LAB backend (RG/SA/container/RBAC)'
-    inputs:
-      azureSubscription: 'Road2Senior-NewConnection2025'
-      scriptType: bash
-      scriptLocation: inlineScript
-      inlineScript: |
-        set -euo pipefail
-        
-        echo ">>> Ensure backend RG"
-        az group create -n '${{ parameters.backend_rg }}' -l 'westeurope' 1>/dev/null
-        
-        echo ">>> Ensure storage account"
-        if ! az storage account show -g '${{ parameters.backend_rg }}' -n '${{ parameters.backend_sa }}' 1>/dev/null 2>&1; then
-          az storage account create \
-            -g '${{ parameters.backend_rg }}' \
-            -n '${{ parameters.backend_sa }}' \
-            -l 'westeurope' \
-            --sku Standard_LRS \
-            --kind StorageV2 \
-            --allow-blob-public-access false \
-            --min-tls-version TLS1_2
-        fi
-        
-        echo ">>> Ensure container '${{ parameters.backend_container }}'"
-        az storage container create \
-          --name '${{ parameters.backend_container }}' \
-          --account-name '${{ parameters.backend_sa }}' \
-          --auth-mode login 1>/dev/null
-        
-        echo ">>> Ensure RBAC: Storage Blob Data Contributor for SPN"
-        SA_ID=$(az storage account show -g '${{ parameters.backend_rg }}' -n '${{ parameters.backend_sa }}' --query id -o tsv)
-        az role assignment create \
-          --role "Storage Blob Data Contributor" \
-          --assignee-object-id "$(servicePrincipalId)" \
-          --assignee-principal-type ServicePrincipal \
-          --scope "${SA_ID}" 1>/dev/null || true
-          
-  - task: AzureCLI@2
-    displayName: 'Terraform ${{ parameters.action }} (terraform-labs)'
+    displayName: 'Terraform ${{ parameters.action }} (infra-lab)'
     inputs:
       azureSubscription: 'Road2Senior-NewConnection2025'
       scriptType: bash
@@ -93,14 +59,16 @@ steps:
         TF_DIR="$(Build.SourcesDirectory)/terraform-labs"
         echo ">>> Using directory: $TF_DIR"
 
-        echo ">>> terraform init (remote state per lab)"
-        terraform -chdir="$TF_DIR" init \
+        echo ">>> terraform init (backend via access_key)"
+        terraform -chdir="$TF_DIR" init -reconfigure \
           -input=false -no-color \
-          -backend-config="resource_group_name=hus-dev-lab" \
-          -backend-config="storage_account_name=tfstatehubertlab001" \
-          -backend-config="container_name=tfstate" \
-          -backend-config="key=labs/${{ parameters.env_prefix }}.tfstate"
+          -backend-config="resource_group_name=${{ parameters.backend_rg }}" \
+          -backend-config="storage_account_name=${{ parameters.backend_sa }}" \
+          -backend-config="container_name=${{ parameters.backend_container }}" \
+          -backend-config="access_key=$(tfstate_access_key)" \
+          -backend-config="key=${{ parameters.backend_key }}"
 
+        # (opcjonalnie) workspaces — możesz usunąć, bo i tak rozdzielamy plikiem stanu
         echo ">>> terraform workspace select/create"
         terraform -chdir="$TF_DIR" workspace select "${{ parameters.env_prefix }}" || terraform -chdir="$TF_DIR" workspace new "${{ parameters.env_prefix }}"
 
@@ -114,6 +82,10 @@ steps:
 
           echo ">>> terraform apply"
           terraform -chdir="$TF_DIR" apply -input=false -no-color -auto-approve tfplan
+
+          echo ">>> terraform outputs"
+          terraform -chdir="$TF_DIR" output
+          terraform -chdir="$TF_DIR" output -json > $(Build.ArtifactStagingDirectory)/tf-outputs.json
         else
           echo ">>> terraform destroy"
           terraform -chdir="$TF_DIR" destroy -input=false -no-color -auto-approve \
@@ -121,18 +93,20 @@ steps:
             -var="location=${{ parameters.location }}"
         fi
     env:
-      # Provider AzureRM przez SPN – NAZWY 1:1 jak w Variable Group
       ARM_CLIENT_ID: $(servicePrincipalId)
       ARM_CLIENT_SECRET: $(servicePrincipalKey)
       ARM_TENANT_ID: $(tenant_id)
       ARM_SUBSCRIPTION_ID: $(subscription_id)
 
-      # Mapowanie zmiennych z variables.tf → TF_VAR_*
       TF_VAR_env_prefix: ${{ parameters.env_prefix }}
       TF_VAR_location: ${{ parameters.location }}
-
-      # Z Twojej VG:
       TF_VAR_sql_admin_login: $(sql_admin_login)
       TF_VAR_sql_admin_password: $(sql_admin_password)
 
-      # (Opcjonalnie dodaj tu kolejne TF_VAR_* jeśli masz je w variables.tf)
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Terraform outputs'
+    condition: and(succeeded(), eq('${{ parameters.action }}','apply'))
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/tf-outputs.json'
+      ArtifactName: 'tf-outputs'
+      publishLocation: 'Container'

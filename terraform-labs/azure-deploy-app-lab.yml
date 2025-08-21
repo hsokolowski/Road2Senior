@@ -1,0 +1,102 @@
+﻿trigger: none
+
+variables:
+  - group: infra-secrets   # musi zawierać m.in. tfstate_access_key
+
+parameters:
+  - name: env_prefix
+    type: string
+    default: 'lab1'
+
+  # backend (taki sam jak w infra-lab)
+  - name: backend_rg
+    type: string
+    default: 'hus-dev'
+  - name: backend_sa
+    type: string
+    default: 'tfstatehubert001'
+  - name: backend_container
+    type: string
+    default: 'tfstate'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - checkout: self
+
+  # pobierz artefakt z builda (ZIP aplikacji)
+  - download: current
+    artifact: drop
+
+  - script: |
+      echo "Installing Terraform 1.5.7"
+      curl -s -o terraform.zip https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip
+      unzip terraform.zip
+      sudo mv terraform /usr/local/bin/
+    displayName: 'Manual Install Terraform 1.5.7'
+
+  # 1) Read Terraform outputs dla wskazanego lab-a
+  - task: AzureCLI@2
+    name: tfout
+    displayName: 'Read Terraform outputs (lab)'
+    inputs:
+      azureSubscription: 'Road2Senior-NewConnection2025'
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -euo pipefail
+        export TF_IN_AUTOMATION=1
+        TF_DIR="$(Build.SourcesDirectory)/terraform-labs"
+
+        echo ">>> terraform init (read outputs via access_key)"
+        terraform -chdir="$TF_DIR" init -reconfigure \
+          -input=false -no-color \
+          -backend-config="resource_group_name=${{ parameters.backend_rg }}" \
+          -backend-config="storage_account_name=${{ parameters.backend_sa }}" \
+          -backend-config="container_name=${{ parameters.backend_container }}" \
+          -backend-config="access_key=$(tfstate_access_key)" \
+          -backend-config="key=labs/${{ parameters.env_prefix }}.tfstate"
+
+        terraform -chdir="$TF_DIR" workspace select "${{ parameters.env_prefix }}" || true
+
+        RG_NAME=$(terraform -chdir="$TF_DIR" output -raw resource_group_name)
+        WEBAPP_NAME=$(terraform -chdir="$TF_DIR" output -raw webapp_name)
+        KEY_VAULT_URI=$(terraform -chdir="$TF_DIR" output -raw key_vault_uri)
+
+        echo "RG_NAME=$RG_NAME"
+        echo "WEBAPP_NAME=$WEBAPP_NAME"
+        echo "KEY_VAULT_URI=$KEY_VAULT_URI"
+
+        echo "##vso[task.setvariable variable=RG_NAME]$RG_NAME"
+        echo "##vso[task.setvariable variable=WEBAPP_NAME]$WEBAPP_NAME"
+        echo "##vso[task.setvariable variable=KEY_VAULT_URI]$KEY_VAULT_URI"
+    env:
+      tfstate_access_key: $(tfstate_access_key)
+
+  # 2) Ustaw App Settings (Windows Web App)
+  - task: AzureCLI@2
+    displayName: 'Set App Settings for $(WEBAPP_NAME)'
+    inputs:
+      azureSubscription: 'Road2Senior-NewConnection2025'
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -euo pipefail
+        az webapp config appsettings set \
+          --resource-group "$(RG_NAME)" \
+          --name "$(WEBAPP_NAME)" \
+          --settings \
+            ASPNETCORE_ENVIRONMENT=Lab \
+            DatabaseType=AzureKv \
+            KeyVaultUri="$(KEY_VAULT_URI)"
+
+  # 3) Deploy ZIP do Windows Web App
+  - task: AzureWebApp@1
+    displayName: 'Deploy to $(WEBAPP_NAME)'
+    inputs:
+      azureSubscription: 'Road2Senior-NewConnection2025'
+      appType: 'webApp'                # WINDOWS
+      appName: '$(WEBAPP_NAME)'
+      package: '$(Pipeline.Workspace)/drop/*.zip'
+      # slotName: 'staging'            # odkomentuj jeśli używasz slotów
