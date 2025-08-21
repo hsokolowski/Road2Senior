@@ -1,7 +1,7 @@
 trigger: none
 
 variables:
-  - group: infra-secrets  # ARM_* z Variable Group
+  - group: infra-secrets   # azure_devops_pat, github_*, servicePrincipalId, servicePrincipalKey, subscription_id, tenant_id, sql_admin_login, sql_admin_password
 
 parameters:
   - name: env_prefix
@@ -32,40 +32,58 @@ steps:
     displayName: 'Manual Install Terraform 1.5.7'
 
   - task: AzureCLI@2
-    displayName: 'Run Terraform ${{ parameters.action }} (terraform-labs)'
+    displayName: 'Terraform ${{ parameters.action }} (terraform-labs)'
     inputs:
       azureSubscription: 'Road2Senior-NewConnection2025'
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: |
         set -euo pipefail
-        cd "$(Build.SourcesDirectory)/terraform-labs"
+        export TF_IN_AUTOMATION=1
 
-        echo ">> terraform init (remote state per lab)"
-        terraform init \
+        TF_DIR="$(Build.SourcesDirectory)/terraform-labs"
+        echo ">>> Using directory: $TF_DIR"
+
+        echo ">>> terraform init (remote state per lab)"
+        terraform -chdir="$TF_DIR" init \
+          -input=false -no-color \
           -backend-config="resource_group_name=hus-dev-lab" \
           -backend-config="storage_account_name=tfstatehubertlab001" \
           -backend-config="container_name=tfstate" \
           -backend-config="key=labs/${{ parameters.env_prefix }}.tfstate"
 
-        if [ "${{ parameters.action }}" = "apply" ]; then
-          terraform plan \
-            -var-file="$(Build.SourcesDirectory)/secret.tfvars" \
-            -var="env_prefix=${{ parameters.env_prefix }}" \
-            -var="location=${{ parameters.location }}"
+        echo ">>> terraform workspace select/create"
+        terraform -chdir="$TF_DIR" workspace select "${{ parameters.env_prefix }}" || terraform -chdir="$TF_DIR" workspace new "${{ parameters.env_prefix }}"
 
-          terraform apply -auto-approve \
-            -var-file="$(Build.SourcesDirectory)/secret.tfvars" \
+        if [ "${{ parameters.action }}" = "apply" ]; then
+          echo ">>> terraform plan"
+          terraform -chdir="$TF_DIR" plan \
+            -input=false -no-color \
             -var="env_prefix=${{ parameters.env_prefix }}" \
-            -var="location=${{ parameters.location }}"
+            -var="location=${{ parameters.location }}" \
+            -out=tfplan
+
+          echo ">>> terraform apply"
+          terraform -chdir="$TF_DIR" apply -input=false -no-color -auto-approve tfplan
         else
-          terraform destroy -auto-approve \
-            -var-file="$(Build.SourcesDirectory)/secret.tfvars" \
+          echo ">>> terraform destroy"
+          terraform -chdir="$TF_DIR" destroy -input=false -no-color -auto-approve \
             -var="env_prefix=${{ parameters.env_prefix }}" \
             -var="location=${{ parameters.location }}"
         fi
     env:
+      # Provider AzureRM przez SPN – NAZWY 1:1 jak w Variable Group
       ARM_CLIENT_ID: $(servicePrincipalId)
       ARM_CLIENT_SECRET: $(servicePrincipalKey)
       ARM_TENANT_ID: $(tenant_id)
       ARM_SUBSCRIPTION_ID: $(subscription_id)
+
+      # Mapowanie zmiennych z variables.tf → TF_VAR_*
+      TF_VAR_env_prefix: ${{ parameters.env_prefix }}
+      TF_VAR_location: ${{ parameters.location }}
+
+      # Z Twojej VG:
+      TF_VAR_sql_admin_login: $(sql_admin_login)
+      TF_VAR_sql_admin_password: $(sql_admin_password)
+
+      # (Opcjonalnie dodaj tu kolejne TF_VAR_* jeśli masz je w variables.tf)
