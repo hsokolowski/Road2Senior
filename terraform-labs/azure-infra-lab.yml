@@ -28,9 +28,7 @@ parameters:
   - name: backend_container
     type: string
     default: 'tfstate'
-  - name: backend_key
-    type: string
-    default: 'labs/${{ parameters.env_prefix }}.tfstate'  # osobny plik stanu per lab
+
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -59,6 +57,9 @@ steps:
         TF_DIR="$(Build.SourcesDirectory)/terraform-labs"
         echo ">>> Using directory: $TF_DIR"
 
+        BACKEND_KEY="labs/${{ parameters.env_prefix }}.tfstate"
+        echo ">>> backend key: ${BACKEND_KEY}"
+
         echo ">>> terraform init (backend via access_key)"
         terraform -chdir="$TF_DIR" init -reconfigure \
           -input=false -no-color \
@@ -66,7 +67,7 @@ steps:
           -backend-config="storage_account_name=${{ parameters.backend_sa }}" \
           -backend-config="container_name=${{ parameters.backend_container }}" \
           -backend-config="access_key=$(tfstate_access_key)" \
-          -backend-config="key=${{ parameters.backend_key }}"
+          -backend-config="key=${BACKEND_KEY}"
 
         # (opcjonalnie) workspaces — możesz usunąć, bo i tak rozdzielamy plikiem stanu
         echo ">>> terraform workspace select/create"
