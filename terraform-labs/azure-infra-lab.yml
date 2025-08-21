@@ -24,8 +24,15 @@ pool:
 steps:
   - checkout: self
 
+  - script: |
+      echo "Installing Terraform 1.5.7"
+      curl -s -o terraform.zip https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip
+      unzip terraform.zip
+      sudo mv terraform /usr/local/bin/
+    displayName: 'Manual Install Terraform 1.5.7'
+
   - task: AzureCLI@2
-    displayName: 'Terraform ${{ parameters.action }} (terraform-labs)'
+    displayName: 'Run Terraform ${{ parameters.action }} (terraform-labs)'
     inputs:
       azureSubscription: 'Road2Senior-NewConnection2025'
       scriptType: bash
