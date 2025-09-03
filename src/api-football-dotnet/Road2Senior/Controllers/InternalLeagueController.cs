@@ -1,6 +1,7 @@
 ﻿using Contracts;
 using Contracts.League;
 using Infrastructure.Database;
+using Infrastructure.Messaging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Road2Senior.Controllers;
@@ -17,6 +18,7 @@ public class InternalLeagueController : ControllerBase
     }
     
     [HttpGet("league/{id}")]
+    [AuditLog] 
     public async Task<IActionResult> GetLeague(int id)
     {
         var league = await _leagueRepository.GetLeagueAsync(id);

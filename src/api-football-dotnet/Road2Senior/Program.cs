@@ -2,6 +2,7 @@ using Application;
 using Azure.Identity;
 using Infrastructure;
 using Infrastructure.Database.Repositories;
+using Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Road2Senior;
@@ -16,9 +17,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Konfiguracja appsettings.json + Azure Key Vault
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddEnvironmentVariables();
+
+var inContainer = string.Equals(
+    Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"),
+    "true", StringComparison.OrdinalIgnoreCase);
 
 var keyVaultUri = builder.Configuration["KeyVaultUri"];
-if (!string.IsNullOrEmpty(keyVaultUri))
+if (!inContainer && !string.IsNullOrEmpty(keyVaultUri))
 {
     builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
 }
@@ -31,8 +37,14 @@ builder.Services
 //--builder.Services.RegisterDb(builder.Configuration, builder.Environment);
 //--builder.Services.RegisterInfrastructure(builder.Configuration.GetSection("Infrastructure"));
 
+builder.Services.AddSingleton<RabbitPublisher>();
+
 // Kontrolery i Swagger
-builder.Services.AddControllers();
+builder.Services.AddControllers(o =>
+{
+    // globalnie dla wszystkich akcji:
+    o.Filters.Add<AuditLogAttribute>();
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -67,7 +79,18 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+//Tworzy bazę/tabele na starcie.
+// *EnsureCreatedAsync() → jeśli DB nie ma, tworzy ją i tabelki.
+// *MigrateAsync() → odpala migracje EF (lepsze docelowo).
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<FootballContext>();
+    await db.Database.MigrateAsync();   // lub db.Database.EnsureCreatedAsync();
+}
+//TEST CURL
+//curl -H "X-Api-Key: dev" http://localhost:8080/api/internalleague/league/1
+
+// Configure the HTTP request pipeline. 
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
